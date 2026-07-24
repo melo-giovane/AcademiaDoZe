@@ -4,7 +4,9 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Enums
 {
-    internal class ColaboradorVinculo
+    public enum ColaboradorVinculo
     {
+        CLT = 0,
+        Estagio = 1
     }
 }

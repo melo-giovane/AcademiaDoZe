@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.ValueObjects
 {
-    internal class Senha
+    public class Senha
     {
     }
 }
