@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AcademiaDoZe.Domain.Entities
+namespace AcademiaDoZe.Domain.Entities;
+
+internal class AcessoAluno
 {
-    internal class AcessoAluno
-    {
-    }
 }

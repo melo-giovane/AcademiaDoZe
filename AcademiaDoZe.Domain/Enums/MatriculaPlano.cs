@@ -4,7 +4,11 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Enums
 {
-    internal class MatriculaPlano
+    public enum MatriculaPlano
     {
+        mensal = 0,
+        trimestral = 1,
+        semestral = 2,
+        anual = 3
     }
 }

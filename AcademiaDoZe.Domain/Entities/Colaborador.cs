@@ -4,31 +4,30 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AcademiaDoZe.Domain.Entities
-{
-    public class Colaborador : Pessoa
-    {
-        public DateOnly DataAdmissao { get; private set; }
-        public ColaboradorTipo Tipo { get; private set; }
-        public ColaboradorVinculo Vinculo { get; private set; }
+namespace AcademiaDoZe.Domain.Entities;
 
-        private Colaborador(int id,
-                           string nome,
-                           string cpf,
-                           DateOnly dataNascimento,
-                           Telefone telefone,
-                           Email email,
-                           Endereco endereco,
-                           Senha senha,
-                           Arquivo foto,
-                           DateOnly dataAdmissao,
-                           ColaboradorTipo tipo,
-                           ColaboradorVinculo vinculo)
-        : base(id, nome, cpf, dataNascimento, telefone, email, endereco, senha, foto)
-        {
-            DataAdmissao = dataAdmissao;
-            Tipo = tipo;
-            Vinculo = vinculo;
-        }
+private class Colaborador : Pessoa
+{
+    public DateOnly DataAdmissao { get; private set; }
+    public ColaboradorTipo Tipo { get; private set; }
+    public ColaboradorVinculo Vinculo { get; private set; }
+
+    private Colaborador(int id,
+                       string nome,
+                       string cpf,
+                       DateOnly dataNascimento,
+                       Telefone telefone,
+                       Email email,
+                       Endereco endereco,
+                       Senha senha,
+                       Arquivo foto,
+                       DateOnly dataAdmissao,
+                       ColaboradorTipo tipo,
+                       ColaboradorVinculo vinculo)
+    : base(id, nome, cpf, dataNascimento, telefone, email, endereco, senha, foto)
+    {
+        DataAdmissao = dataAdmissao;
+        Tipo = tipo;
+        Vinculo = vinculo;
     }
 }

@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AcademiaDoZe.Domain.Enums
+namespace AcademiaDoZe.Domain.Enums;
+
+public enum ColaboradorVinculo
 {
-    public enum ColaboradorVinculo
-    {
-        CLT = 0,
-        Estagio = 1
-    }
+    CLT = 0,
+    Estagio = 1
 }

@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AcademiaDoZe.Domain.Entities
-{
-    public abstract class Entity
-    {
-        public int Id { get; protected set; }
+namespace AcademiaDoZe.Domain.Entities;
 
-        protected Entity(int id = 0)
-        {
-            if (id < 0) throw new Exception ("ID_NEGATIVO");
-            Id = id;
-        }
+public abstract class Entity
+{
+    public int Id { get; protected set; }
+
+    protected Entity(int id = 0)
+    {
+        if (id < 0) throw new Exception ("ID_NEGATIVO");
+        Id = id;
     }
 }
