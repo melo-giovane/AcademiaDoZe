@@ -1,16 +1,16 @@
-﻿using System;
+﻿using AcademiaDoZe.Domain.Entities;
+using System;//Giovane Melo
 using System.Collections.Generic;
 using System.Text;
 
-namespace AcademiaDoZe.Domain.ValueObjects
+namespace AcademiaDoZe.Domain.ValueObjects;
+
+public record Cpf
 {
-    public record Cpf
+    public string Valor { get;  }
+    
+    private Cpf(string valor)
     {
-        public string Valor { get;  }
-        
-        private Cpf(string valor)
-        {
-            Valor = valor;
-        }
+        Valor = valor;
     }
 }

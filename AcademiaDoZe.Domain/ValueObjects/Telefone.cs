@@ -1,10 +1,15 @@
-﻿using System;
+﻿using System;//Giovane Melo
 using System.Collections.Generic;
 using System.Text;
 
-namespace AcademiaDoZe.Domain.ValueObjects
+namespace AcademiaDoZe.Domain.ValueObjects;
+
+public record Telefone
 {
-    public class Telefone
+    public string Valor { get; }
+
+    public Telefone(string valor)
     {
+        Valor = valor;
     }
 }
