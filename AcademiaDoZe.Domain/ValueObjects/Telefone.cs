@@ -8,7 +8,7 @@ public record Telefone
 {
     public string Valor { get; }
 
-    public Telefone(string valor)
+    private Telefone(string valor)
     {
         Valor = valor;
     }

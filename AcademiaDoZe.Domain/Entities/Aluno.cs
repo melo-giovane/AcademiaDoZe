@@ -6,18 +6,18 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Entities;
 
-internal class Aluno : Pessoa
+public class Aluno : Pessoa
 {
-    public Aluno(string nome,
+    private Aluno(string nome,
                 int id,
                 Cpf cpf,
                 DateOnly dataNascimento,
                 Telefone telefone,
                 Email email,
+                Endereco endereco,
                 Senha senha,
-                Arquivo foto,
-                Endereco endereco)
-    : base(id, nome, cpf, dataNascimento, telefone, email, senha, foto, endereco)
+                Arquivo foto)
+           : base(id, nome, cpf, dataNascimento, telefone, email, endereco, senha, foto)
     {
     }
 

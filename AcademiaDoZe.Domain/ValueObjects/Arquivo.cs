@@ -4,6 +4,12 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.ValueObjects;
 
-public class Arquivo
+public record Arquivo
 {
+    public byte[] Conteudo { get;  }
+
+    private Arquivo(byte[] conteudo)
+    {
+        Conteudo = conteudo;
+    }
 }

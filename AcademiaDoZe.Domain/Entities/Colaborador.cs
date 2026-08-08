@@ -6,7 +6,7 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Entities;
 
-internal class Colaborador : Pessoa
+public class Colaborador : Pessoa
 {
     public DateOnly DataAdmissao { get; private set; }
     public ColaboradorTipo Tipo { get; private set; }
@@ -24,7 +24,7 @@ internal class Colaborador : Pessoa
                        DateOnly dataAdmissao,
                        ColaboradorTipo tipo,
                        ColaboradorVinculo vinculo)
-    : base(id, nome, cpf, dataNascimento, telefone, email, senha, foto, endereco)
+    : base(id, nome, cpf, dataNascimento, telefone, email, endereco, senha, foto)
     {
         DataAdmissao = dataAdmissao;
         Tipo = tipo;

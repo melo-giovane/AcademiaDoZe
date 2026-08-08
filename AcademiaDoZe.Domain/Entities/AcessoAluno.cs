@@ -4,16 +4,14 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Entities;
 
-internal class AcessoAluno : Entity
+public class AcessoAluno : Entity
 {
-    Aluno Aluno { get; set; }
-    DateOnly Chegada { get; set; }
-    DateOnly Saida { get; set; }
+    public Aluno Aluno { get; private set; }
+    public DateOnly DataHora { get; private set; }
 
-    public AcessoAluno(int id, Aluno aluno, DateOnly chegada, DateOnly saida): base(id)
+    private AcessoAluno(int id, Aluno aluno, DateOnly dataHora): base(id)
     {
         Aluno = aluno;
-        Chegada = chegada;
-        Saida = saida;
+        DataHora = dataHora;
     }
 }

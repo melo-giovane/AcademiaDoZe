@@ -5,19 +5,17 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.ValueObjects;
 
-internal class Endereco
+public record Endereco
 {
-    public required string Cidade { get; set; }
-    public required string Estado { get; set; }
-    public required Logradouro Logradouro { get; set; }
-    public int Numero { get; set; }
-    public string Bairro { get; set; }
+    public  Logradouro Logradouro { get;  }
+    public string Numero { get;  }
+    public string Complemento { get;  }
 
-    public Endereco(Logradouro logradouro, int numero, string bairro)
+    private Endereco(Logradouro logradouro, string numero, string complemento)
     {
         Logradouro = logradouro;
         Numero = numero;
-        Bairro = bairro;
+        Complemento = complemento;
     }
 
 }

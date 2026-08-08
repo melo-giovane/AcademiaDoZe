@@ -1,18 +1,29 @@
-﻿using AcademiaDoZe.Domain.ValueObjects;
+﻿using AcademiaDoZe.Domain.ValueObjects; //Giovane Melo
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace AcademiaDoZe.Domain.Entities;
 
-internal class Logradouro : Entity
+public sealed class Logradouro : Entity
 {
-    public Cep Cep { get; private set; }
-    public String Nome { get; private set; }
+    public Cep Cep { get;  }
+    public string Nome { get;  }
+    public string Bairro { get; }
+    public string Cidade { get; }
+    public string Estado { get; }
+    public string Pais { get; }
 
-    public Logradouro(int id, Cep cep, String nome) : base(id)
+
+
+
+    private Logradouro(int id, Cep cep, String nome, string bairro, string cidade, string estado, string pais) : base(id)
     {
         Cep = cep;
         Nome = nome;
+        Bairro = bairro;
+        Cidade = cidade;
+        Estado = estado;
+        Pais = pais;
     }
 }
