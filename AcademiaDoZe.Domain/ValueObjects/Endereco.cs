@@ -1,4 +1,6 @@
-﻿using AcademiaDoZe.Domain.Entities;//Giovane Melo
+﻿using AcademiaDoZe.Domain.Common;
+using AcademiaDoZe.Domain.Entities;//Giovane Melo
+using AcademiaDoZe.Domain.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,4 +20,20 @@ public record Endereco
         Complemento = complemento;
     }
 
+    public static Result<Endereco> Criar(Logradouro logradouro, string numero, string complemento)
+    {
+        var notifications = new List<Notification>();
+        if (logradouro == null)
+            notifications.Add(new Notification("Endereco", "LOGRADOURO_OBRIGATORIO"));
+        if (NormalizadoService.TextoVazioOuNulo(numero))
+            notifications.Add(new Notification("Numero", "NUMERO_OBRIGATORIO"));
+        else
+            numero = NormalizadoService.LimparEspacos(numero);
+            complemento = NormalizadoService.LimparEspacos(complemento);
+
+        if (notifications.Count != 0)
+            return Result<Endereco>.Failure(notifications);
+
+        return Result<Endereco>.Success(new Endereco(logradouro!, numero, complemento));
+    }
 }
