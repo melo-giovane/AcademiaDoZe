@@ -20,7 +20,7 @@ public record Cep
         if (NormalizadoService.TextoVazioOuNulo(valor))
             return Result<Cep>.Failure("Cep", "CEP_OBRIGATORIO");
 
-        var textoLimpo = NormalizadoService.limparEDigitos(valor);
+        var textoLimpo = NormalizadoService.LimparEDigitos(valor);
         if (textoLimpo.Length != 8)
             return Result<Cep>.Failure("Cep", "CEP_DIGITOS");
 
