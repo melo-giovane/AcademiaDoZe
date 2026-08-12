@@ -4,6 +4,6 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Exceptions;
 
-public sealed class DomainExceptions(string message) : Exception(message)
+public sealed class DomainException(string message) : Exception(message)
 {
 }

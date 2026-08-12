@@ -1,4 +1,5 @@
-﻿using AcademiaDoZe.Domain.Enums;//Giovane Melo
+﻿using AcademiaDoZe.Domain.Common;
+using AcademiaDoZe.Domain.Enums;//Giovane Melo
 using AcademiaDoZe.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,21 @@ public class Matricula : Entity
         Objetivo = objetivo;
         LaudoMedico = laudoMedico;
         ObservacoesMedicas = observacoesMedicas;
+    }
+
+    public static Result<Matricula> Criar(int id, Aluno alunoMatricula, MatriculaPlano plano, DateOnly dataInicio, DateOnly dataFim, string objetivo, MatriculaRestricoes restricoesMedicas, 
+        Arquivo? laudoMedico,string observacoesMedicas)
+    {
+        var notifications = new List<Notification>();
+        if(alunoMatricula is null)
+            notifications.Add(new Notification("ALUNO", "ALUNO_OBRIGATORIO"));
+        if(!Enum.IsDefined(plano))
+            notifications.Add(new Notification("PLANO", "PLANO_INVALIDO"));
+        if (dataInicio < DateOnly.FromDateTime(DateTime.Today))
+            notifications.Add(new Notification("DATAINICIO", "DATAINICIO_INVALIDA"));
+        if (dataFim < DateOnly.FromDateTime(DateTime.Today))
+            notifications.Add(new Notification("DATAFIM", "DATAFIM_INVALIDA"));
+        
     }
 
 }

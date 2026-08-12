@@ -11,7 +11,7 @@ public abstract class Entity
 
     protected Entity(int id = 0)
     {
-        if (id < 0) throw new DomainException ("ID_NEGATIVO");
+        if (id < 0) throw new DomainException("ID_NEGATIVO");
         Id = id;
     }
 }
