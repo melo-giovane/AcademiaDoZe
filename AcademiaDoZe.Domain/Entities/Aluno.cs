@@ -47,3 +47,4 @@ public class Aluno : Pessoa, IAggregateRoot
         );
         return Result<Aluno>.Success(aluno);
     }
+}

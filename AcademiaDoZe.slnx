@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="AcademiaDoZe.Domain.Tests/AcademiaDoZe.Domain.Tests.csproj" Id="47c80d70-c7f1-4d05-8ce3-9ec02f9f84b9" />
   <Project Path="AcademiaDoZe.Domain/AcademiaDoZe.Domain.csproj" />
 </Solution>
