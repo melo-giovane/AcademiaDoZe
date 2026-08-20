@@ -44,6 +44,14 @@ public class Matricula : Entity
             notifications.Add(new Notification("DATAINICIO", "DATAINICIO_INVALIDA"));
         if (dataFim < DateOnly.FromDateTime(DateTime.Today))
             notifications.Add(new Notification("DATAFIM", "DATAFIM_INVALIDA"));
+        if (!Enum.IsDefined(restricoesMedicas))
+            notifications.Add(new Notification("RESTRICOES", "RESTRICOES_INVALIDAS"));
+
+        if(notifications.Count != 0)
+            return Result<Matricula>.Failure(notifications);
+
+        var matricula = new Matricula(id, alunoMatricula!, plano, dataInicio, dataFim, objetivo, restricoesMedicas, laudoMedico, observacoesMedicas);
+        return Result<Matricula>.Success(matricula);
         
     }
 
