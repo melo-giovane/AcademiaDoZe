@@ -1,34 +1,22 @@
-﻿using AcademiaDoZe.Domain.Common;
+﻿using AcademiaDoZe.Domain.Common;//Giovane Melo 
 using AcademiaDoZe.Domain.Services;
-using System;//Giovane Melo 
-using System.Collections.Generic;
-using System.Text;
-
 namespace AcademiaDoZe.Domain.ValueObjects;
 
 public record Senha
 {
-    public string Valor { get; set; }
-
-    private Senha (string valor)
+    public string Valor { get; }
+    private Senha(string valor)
     {
         Valor = valor;
     }
-
     public static Result<Senha> Criar(string valor)
     {
-        if (NormalizadoService.TextoVazioOuNulo(valor))
-            return Result<Senha>.Failure("Senha", "SENHA_OBRIGATORIA");
-
-
-        var TextoLimpo = NormalizadoService.LimparEspacos(valor);
-        if (TextoLimpo.Length < 6)
-            return Result<Senha>.Failure("Senha", "SENHA_DIGITOS");
-
-        return Result<Senha>.Success(new Senha(TextoLimpo));
-
+        if (NormalizacaoService.TextoVazioOuNulo(valor))
+            return Result<Senha>.Failure("Senha", "SENHA_OBRIGATORIO");
+        var textoLimpo = NormalizacaoService.LimparEspacos(valor);
+        if (textoLimpo.Length < 6 || !textoLimpo.Any(char.IsUpper))
+            return Result<Senha>.Failure("Senha", "SENHA_FORMATO");
+        return Result<Senha>.Success(new Senha(textoLimpo));
     }
-
-    public override string ToString() => "Senha Protegida";
-
+    public override string ToString() => Valor;
 }

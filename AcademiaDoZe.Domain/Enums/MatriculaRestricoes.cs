@@ -7,7 +7,7 @@ namespace AcademiaDoZe.Domain.Enums;
 [Flags]
 public enum MatriculaRestricoes
 {
-    none = 0,
+    None = 0,
     Diabetes = 1,
     PressaoAlta = 2,
     Labirintite = 4,

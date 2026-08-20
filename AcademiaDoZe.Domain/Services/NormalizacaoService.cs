@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AcademiaDoZe.Domain.Services;
 
-public static partial class NormalizadoService
+public static partial class NormalizacaoService
 {
     public static bool TextoVazioOuNulo(string? texto) => string.IsNullOrWhiteSpace(texto);
     public static string LimparEspacos(string? texto) => string.IsNullOrWhiteSpace(texto) ? string.Empty : EspacosRegex().Replace(texto, " ").Trim();
