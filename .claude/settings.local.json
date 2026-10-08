@@ -1,8 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(dotnet test *)",
-      "Bash(dotnet build *)"
+      "Bash(dotnet --list-sdks)",
+      "Bash(dotnet workload *)"
     ]
   }
 }
