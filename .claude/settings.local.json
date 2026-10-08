@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(dotnet --list-sdks)",
-      "Bash(dotnet workload *)"
+      "Bash(dotnet workload *)",
+      "WebSearch",
+      "WebFetch(domain:www.iconpacks.net)",
+      "Bash(dotnet build *)"
     ]
   }
 }
