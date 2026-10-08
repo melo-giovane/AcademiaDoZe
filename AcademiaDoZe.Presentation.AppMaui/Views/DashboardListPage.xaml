@@ -12,7 +12,8 @@
             <StackLayout Spacing="10" Margin="0,0,0,20">
                 <Image Source="academiadoze.png" HorizontalOptions="Center" VerticalOptions="Start" HeightRequest="200" WidthRequest="200"/>
                 <Label Text="Academia do Zé" Style="{StaticResource Headline}"/>
-                <Label Text="Sistema de Gerenciamento" Style="{StaticResource SubHeadline}"/>
+                <Label Text="Painel de Controle" Style="{StaticResource SubHeadline}"/>
+                <BoxView HeightRequest="2" WidthRequest="60" Color="{StaticResource Primary}" HorizontalOptions="Center"/>
             </StackLayout>
             <!-- Cards Container -->
             <Grid Grid.Row="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="15" ColumnSpacing="15">
