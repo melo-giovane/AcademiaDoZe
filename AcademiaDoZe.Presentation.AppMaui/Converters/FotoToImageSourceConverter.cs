@@ -1,4 +1,4 @@
-﻿using AcademiaDoZe.Application.DTOs;//Giovane Melo  
+﻿using AcademiaDoZe.Application.DTOs;//Giovane Melo
 using System.Globalization;
 namespace AcademiaDoZe.Presentation.AppMaui.Converters;
 

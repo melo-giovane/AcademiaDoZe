@@ -26,11 +26,21 @@ public static class MauiProgram
         builder.Services.AddTransient<DashboardListViewModel>();
         builder.Services.AddTransient<LogradouroListViewModel>();
         builder.Services.AddTransient<LogradouroViewModel>();
+        builder.Services.AddTransient<AlunoListViewModel>();
+        builder.Services.AddTransient<AlunoViewModel>();
         // Registrar Views
         builder.Services.AddTransient<DashboardListPage>();
         builder.Services.AddTransient<LogradouroListPage>();
         builder.Services.AddTransient<LogradouroPage>();
+        builder.Services.AddTransient<AlunoListPage>();
+        builder.Services.AddTransient<AlunoPage>();
         builder.Services.AddTransient<ConfigPage>();
+        // Registrar ViewModels
+        builder.Services.AddTransient<ColaboradorListViewModel>();
+        builder.Services.AddTransient<ColaboradorViewModel>();
+        // Registrar Views
+        builder.Services.AddTransient<ColaboradorListPage>();
+        builder.Services.AddTransient<ColaboradorPage>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

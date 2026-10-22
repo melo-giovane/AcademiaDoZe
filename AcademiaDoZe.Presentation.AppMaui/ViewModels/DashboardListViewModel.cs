@@ -27,39 +27,39 @@ public partial class DashboardListViewModel : BaseViewModel
     [RelayCommand]
     private async Task LoadDashboardDataAsync()
     {
-            if (IsBusy)
-                return;
-            try
-            {
-                IsBusy = true;
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                var logradourosTask = _logradouroService.ObterTodosAsync(cts.Token);
-                var alunosTask = _alunoService.ObterTodosAsync(cts.Token);
-                var colaboradoresTask = _colaboradorService.ObterTodosAsync(cts.Token);
-                var matriculasTask = _matriculaService.ObterTodasAsync(cts.Token);
-                await Task.WhenAll(logradourosTask, alunosTask, colaboradoresTask, matriculasTask);
-                TotalLogradouros = (await logradourosTask).Count();
-                TotalAlunos = (await alunosTask).Count();
-                TotalColaboradores = (await colaboradoresTask).Count();
-                TotalMatriculas = (await matriculasTask).Count();
-            }
-            catch (OperationCanceledException)
-            {
-                await Shell.Current.DisplayAlertAsync(
-                "Tempo Esgotado",
-                "A conexão com o banco de dados expirou (timeout). Verifique se o caminho ou os dados de conexão estão corretos.",
-                "OK");
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlertAsync("Erro", $"Erro ao carregar dados do painel: {ex.Message}", "OK");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+        if (IsBusy)
+            return;
+        try
+        {
+            IsBusy = true;
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var logradourosTask = _logradouroService.ObterTodosAsync(cts.Token);
+            var alunosTask = _alunoService.ObterTodosAsync(cts.Token);
+            var colaboradoresTask = _colaboradorService.ObterTodosAsync(cts.Token);
+            var matriculasTask = _matriculaService.ObterTodasAsync(cts.Token);
+            await Task.WhenAll(logradourosTask, alunosTask, colaboradoresTask, matriculasTask);
+            TotalLogradouros = (await logradourosTask).Count();
+            TotalAlunos = (await alunosTask).Count();
+            TotalColaboradores = (await colaboradoresTask).Count();
+            TotalMatriculas = (await matriculasTask).Count();
         }
-    
+        catch (OperationCanceledException)
+        {
+            await Shell.Current.DisplayAlertAsync(
+            "Tempo Esgotado",
+            "A conexão com o banco de dados expirou (timeout). Verifique se o caminho ou os dados de conexão estão corretos.",
+            "OK");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync("Erro", $"Erro ao carregar dados do painel: {ex.Message}", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     [RelayCommand]
     private async Task NavigateToLogradourosAsync() => await Shell.Current.GoToAsync("//logradouros");
     [RelayCommand]
@@ -67,5 +67,11 @@ public partial class DashboardListViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToColaboradoresAsync() => await Shell.Current.GoToAsync("//colaboradores");
     [RelayCommand]
-    private async Task NavigateToMatriculasAsync() => await Shell.Current.GoToAsync("//matriculas");
+    private async Task NavigateToMatriculasAsync()
+    {
+        await Shell.Current.DisplayAlertAsync(
+            "Em desenvolvimento",
+            "A tela de matrículas ainda não foi implementada.",
+            "OK");
+    }
 }

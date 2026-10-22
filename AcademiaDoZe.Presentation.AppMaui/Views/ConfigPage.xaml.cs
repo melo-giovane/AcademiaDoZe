@@ -75,12 +75,12 @@ public partial class ConfigPage : ContentPage
                 BancoEntry.Placeholder = "Ex: db_academia_do_ze";
                 UsuarioEntry.Placeholder = "Ex: sa";
                 ComplementoLabel.Text = "Complemento (SSL / Timeout / Criptografia)";
-                ComplementoEntry.Placeholder = "TrustServerCertificate=True;Encrypt=True;Connect Timeout=5;Connection Timeout=5;";
+                ComplementoEntry.Placeholder = "TrustServerCertificate=True;Encrypt=False;Connect Timeout=5;Connection Timeout=5;";
                 ServidorEntry.Text = Preferences.Get("SqlServer_Servidor", Preferences.Get("Servidor", "172.24.32.1"));
                 BancoEntry.Text = Preferences.Get("SqlServer_Banco", Preferences.Get("Banco", "db_academia_do_ze"));
                 UsuarioEntry.Text = Preferences.Get("SqlServer_Usuario", Preferences.Get("Usuario", "sa"));
                 SenhaEntry.Text = Preferences.Get("SqlServer_Senha", Preferences.Get("Senha", "abcBolinhas12345"));
-                ComplementoEntry.Text = Preferences.Get("SqlServer_Complemento", Preferences.Get("Complemento", "TrustServerCertificate=True;Encrypt=True;Connect Timeout=5;Connection Timeout=5;"));
+                ComplementoEntry.Text = Preferences.Get("SqlServer_Complemento", Preferences.Get("Complemento", "TrustServerCertificate=True;Encrypt=False;Connect Timeout=5;Connection Timeout=5;"));
                 break;
             case AppDatabaseType.MySql:
                 SqliteInfoCard.IsVisible = false;

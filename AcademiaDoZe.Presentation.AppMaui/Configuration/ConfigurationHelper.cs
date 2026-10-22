@@ -56,7 +56,7 @@ public static class ConfigurationHelper
             var defaultServer = databaseType == AppDatabaseType.SqlServer ? "172.24.32.1" : "10.30.21.16";
             var defaultUser = databaseType == AppDatabaseType.SqlServer ? "sa" : "root";
             var defaultComplemento = databaseType == AppDatabaseType.SqlServer
-            ? "TrustServerCertificate=True;Encrypt=True;Connect Timeout=5;Connection Timeout=5;"
+            ? "TrustServerCertificate=True;Encrypt=False;Connect Timeout=5;Connection Timeout=5;"
             : "Connection Timeout=5;Default Command Timeout=30;";
             var dbServer = Preferences.Get($"{prefix}_Servidor", Preferences.Get("Servidor", defaultServer));
             var dbDatabase = Preferences.Get($"{prefix}_Banco", Preferences.Get("Banco", "db_academia_do_ze"));

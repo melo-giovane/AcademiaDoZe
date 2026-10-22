@@ -11,21 +11,29 @@
 
             <!-- Cabeçalho -->
             <VerticalStackLayout Grid.Row="0" Grid.ColumnSpan="2" Spacing="6" Margin="15,14,15,4">
-                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                    <Label FontFamily="MaterialIcons"
-                           Text="&#xe871;"
-                           FontSize="28"
-                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                           VerticalTextAlignment="Center"/>
-                    <Label Text="Painel de Controle" Style="{StaticResource Headline}" HorizontalTextAlignment="Start"/>
+                <HorizontalStackLayout Spacing="14"
+                                      VerticalOptions="Center"
+                                      Padding="0,4,0,0"
+                                      HorizontalOptions="Center">
+                    <Image Source="academiadoze.png"
+                           WidthRequest="80"
+                           HeightRequest="80"
+                           Aspect="AspectFit"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Painel de Controle"
+                           Style="{StaticResource Headline}"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"
+                           VerticalOptions="Center"/>
                 </HorizontalStackLayout>
                 <Label Text="Visão geral da academia"
                        FontSize="13"
                        TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}"
-                       HorizontalTextAlignment="Start"/>
+                       HorizontalTextAlignment="Center"/>
                 <BoxView HeightRequest="3"
                          WidthRequest="56"
-                         HorizontalOptions="Start"
+                         HorizontalOptions="Center"
                          Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
             </VerticalStackLayout>
 
@@ -92,43 +100,6 @@
                     <Label Text="Matrículas" HorizontalTextAlignment="Center"/>
                 </StackLayout>
             </Border>
-
-            <!-- Buscar CEP -->
-            <Button Grid.Row="3" Grid.Column="1"
-                    Text="Buscar CEP"
-                    Command="{Binding SearchByCepCommand}"
-                    Style="{StaticResource ButtonPrimary}"
-                    HeightRequest="40"
-                    Padding="15,0">
-                <Button.ImageSource>
-                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe8b6;" />
-                </Button.ImageSource>
-            </Button>
-
-            <!-- Botões de Ação -->
-            <Grid Grid.Row="4" Grid.ColumnSpan="2"
-                  ColumnDefinitions="*,*"
-                  ColumnSpacing="10"
-                  Margin="15,10">
-                <Button Grid.Column="0"
-                        Text="Cancelar"
-                        Command="{Binding CancelCommand}"
-                        Style="{StaticResource ButtonSecondary}"
-                        HeightRequest="50">
-                    <Button.ImageSource>
-                        <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe5c9;" />
-                    </Button.ImageSource>
-                </Button>
-                <Button Grid.Column="1"
-                        Text="Salvar"
-                        Command="{Binding SaveLogradouroCommand}"
-                        Style="{StaticResource ButtonPrimary}"
-                        HeightRequest="50">
-                    <Button.ImageSource>
-                        <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe161;" />
-                    </Button.ImageSource>
-                </Button>
-            </Grid>
 
         </Grid>
     </ScrollView>
