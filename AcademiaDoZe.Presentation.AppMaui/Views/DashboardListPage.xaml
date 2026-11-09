@@ -3,6 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="AcademiaDoZe.Presentation.AppMaui.Views.DashboardListPage"
              Title="Dashboard">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Configurações" Command="{Binding NavigateToConfiguracoesCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe8b8;" Size="24" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
     <ScrollView>
         <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
               ColumnDefinitions="*,*"
@@ -76,7 +83,7 @@
                 </Border.GestureRecognizers>
                 <StackLayout Spacing="10">
                     <Label FontFamily="MaterialIcons"
-                           Text="&#xf233;"
+                           Text="&#xe8f9;"
                            FontSize="32"
                            TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                            HorizontalTextAlignment="Center" />
@@ -92,7 +99,7 @@
                 </Border.GestureRecognizers>
                 <StackLayout Spacing="10">
                     <Label FontFamily="MaterialIcons"
-                           Text="&#xef76;"
+                           Text="&#xe85d;"
                            FontSize="32"
                            TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                            HorizontalTextAlignment="Center" />

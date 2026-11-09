@@ -1,4 +1,4 @@
-﻿using AcademiaDoZe.Application.Interfaces;//Giovane Melo
+using AcademiaDoZe.Application.Interfaces;//Giovane Melo
 using CommunityToolkit.Mvvm.Input;
 namespace AcademiaDoZe.Presentation.AppMaui.ViewModels;
 
@@ -32,7 +32,8 @@ public partial class DashboardListViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            // Inclui a abertura da primeira conexão, a inicialização e as quatro consultas.
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             var logradourosTask = _logradouroService.ObterTodosAsync(cts.Token);
             var alunosTask = _alunoService.ObterTodosAsync(cts.Token);
             var colaboradoresTask = _colaboradorService.ObterTodosAsync(cts.Token);
@@ -47,7 +48,7 @@ public partial class DashboardListViewModel : BaseViewModel
         {
             await Shell.Current.DisplayAlertAsync(
             "Tempo Esgotado",
-            "A conexão com o banco de dados expirou (timeout). Verifique se o caminho ou os dados de conexão estão corretos.",
+            "O carregamento do painel excedeu 30 segundos. Verifique a conexão e as configurações do banco de dados.",
             "OK");
         }
         catch (Exception ex)
@@ -67,11 +68,7 @@ public partial class DashboardListViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToColaboradoresAsync() => await Shell.Current.GoToAsync("//colaboradores");
     [RelayCommand]
-    private async Task NavigateToMatriculasAsync()
-    {
-        await Shell.Current.DisplayAlertAsync(
-            "Em desenvolvimento",
-            "A tela de matrículas ainda não foi implementada.",
-            "OK");
-    }
+    private async Task NavigateToMatriculasAsync() => await Shell.Current.GoToAsync("//matriculas");
+    [RelayCommand]
+    private async Task NavigateToConfiguracoesAsync() => await Shell.Current.GoToAsync("//configuracoes");
 }

@@ -13,6 +13,8 @@ public class LogradouroRepository : BaseRepository, ILogradouroRepository
     {
     }
     private static string BaseSelectQuery => "SELECT id_logradouro, cep, nome, bairro, cidade, estado, pais FROM tb_logradouro";
+    // Também encontra cadastros antigos/importados que mantiveram a máscara do CEP.
+    private const string CepComparison = "REPLACE(REPLACE(REPLACE(cep, '-', ''), '.', ''), ' ', '') = @Cep";
 
     public async Task<Logradouro?> ObterPorId(int id, CancellationToken cancellationToken = default)
     {
@@ -146,7 +148,7 @@ public class LogradouroRepository : BaseRepository, ILogradouroRepository
     {
         try
         {
-            string query = $"{BaseSelectQuery} WHERE cep = @Cep";
+            string query = $"{BaseSelectQuery} WHERE {CepComparison}";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Cep", cep.Valor, DbType.String);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -161,7 +163,7 @@ public class LogradouroRepository : BaseRepository, ILogradouroRepository
     {
         try
         {
-            string query = "SELECT COUNT(1) FROM tb_logradouro WHERE cep = @Cep AND (@Id IS NULL OR id_logradouro <> @Id)";
+            string query = $"SELECT COUNT(1) FROM tb_logradouro WHERE {CepComparison} AND (@Id IS NULL OR id_logradouro <> @Id)";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Cep", cep.Valor, DbType.String);
             command.AddParameter("@Id", (object?)id ?? DBNull.Value, DbType.Int32);

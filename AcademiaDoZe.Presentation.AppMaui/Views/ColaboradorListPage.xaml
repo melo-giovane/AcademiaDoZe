@@ -76,16 +76,15 @@ Utilizamos OnIdiom para ajustar propriedades conforme o tipo de dispositivo: Pho
                     </Label>
 
                     <Label Grid.Row="9" Grid.Column="0" Text="{Binding Complemento, StringFormat='Complemento: {0}'}" Margin="0,0,0,5"/>
-                    <Button Grid.Row="0" Grid.Column="1" Text="" Style="{StaticResource ButtonSmall}" Margin="4,0" Clicked="OnEditButtonClicked">
+                    <Button Grid.Row="0" Grid.Column="1" Text="" Style="{StaticResource ButtonSmall}" Margin="4,0" Clicked="OnEditButtonClicked" SemanticProperties.Description="Editar registro" ToolTipProperties.Text="Editar registro">
                         <Button.ImageSource>
-                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe3c9;" />
+                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe3c9;" Size="20" Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
                         </Button.ImageSource>
                     </Button>
 
-                    <Button Grid.Row="0" Grid.Column="2" Text="" Style="{StaticResource ButtonDanger}" Margin="4,0" Clicked="OnDeleteButtonClicked">
-
+                    <Button Grid.Row="0" Grid.Column="2" Text="" Style="{StaticResource ButtonDanger}" Margin="4,0" Clicked="OnDeleteButtonClicked" SemanticProperties.Description="Excluir registro" ToolTipProperties.Text="Excluir registro">
                         <Button.ImageSource>
-                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe872;" />
+                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe872;" Size="20" Color="{StaticResource White}" />
                         </Button.ImageSource>
                     </Button>
                 </Grid>
@@ -100,9 +99,9 @@ Utilizamos OnIdiom para ajustar propriedades conforme o tipo de dispositivo: Pho
         <Grid ColumnDefinitions="Auto,10,*,10,Auto" VerticalOptions="Center">
             <Picker Grid.Column="0" Title="" ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" WidthRequest="110" HorizontalOptions="Start" HeightRequest="40" VerticalOptions="Center"/>
             <Entry Grid.Column="2" Text="{Binding SearchText}" Placeholder="Digite o valor..." HeightRequest="40" VerticalOptions="Center" ClearButtonVisibility="WhileEditing" ReturnCommand="{Binding SearchColaboradoresCommand}" />
-            <Button Grid.Column="4" Text="" Style="{StaticResource ButtonPrimary}" FontSize="14" WidthRequest="80" HeightRequest="40" Command="{Binding SearchColaboradoresCommand}">
+            <Button Grid.Column="4" Text="" Style="{StaticResource ButtonPrimary}" FontSize="14" WidthRequest="80" HeightRequest="40" Command="{Binding SearchColaboradoresCommand}" SemanticProperties.Description="Buscar" ToolTipProperties.Text="Buscar">
                 <Button.ImageSource>
-                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe8b6;" />
+                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe8b6;" Size="20" Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
                 </Button.ImageSource>
             </Button>
         </Grid>
@@ -134,7 +133,11 @@ Utilizamos OnIdiom para ajustar propriedades conforme o tipo de dispositivo: Pho
                 <CollectionView.EmptyView>
                     <StackLayout VerticalOptions="Center">
                         <Label Text="Nenhum colaborador encontrado" HorizontalOptions="Center" Style="{StaticResource SubHeadline}"/>
-                        <Button Text="Adicionar Primeiro Colaborador" Command="{Binding AddColaboradorCommand}" Style="{StaticResource ButtonPrimary}" HeightRequest="50" Margin="0,20,0,0"/>
+                        <Button Text="Adicionar Primeiro Colaborador" Command="{Binding AddColaboradorCommand}" Style="{StaticResource ButtonPrimary}" HeightRequest="50" Margin="0,20,0,0">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe145;" Size="20" Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
+                            </Button.ImageSource>
+                        </Button>
                     </StackLayout>
                 </CollectionView.EmptyView>
                 <!-- utiliza o DataTemplate criado acima -->
@@ -145,12 +148,12 @@ Utilizamos OnIdiom para ajustar propriedades conforme o tipo de dispositivo: Pho
             </CollectionView>
         </RefreshView>
         <!-- FAB -->
-        <Button Text="" Command="{Binding AddColaboradorCommand}" Style="{StaticResource ButtonPrimary}" WidthRequest="56" HeightRequest="56" HorizontalOptions="End" VerticalOptions="End" Margin="20">
+        <Button Text="" Command="{Binding AddColaboradorCommand}" Style="{StaticResource ButtonPrimary}" WidthRequest="56" HeightRequest="56" HorizontalOptions="End" VerticalOptions="End" Margin="20" SemanticProperties.Description="Adicionar colaborador" ToolTipProperties.Text="Adicionar colaborador">
             <Button.Shadow>
                 <Shadow Brush="{AppThemeBinding Light=Black, Dark=Gray}" Offset="0,4" Radius="8" Opacity="0.3"/>
             </Button.Shadow>
             <Button.ImageSource>
-                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe145;" />
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe145;" Size="20" Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
             </Button.ImageSource>
         </Button>
     </Grid>
