@@ -16,17 +16,17 @@ public class AlunoRepository : BaseRepository, IAlunoRepository
     }
     private static string BaseSelectQuery => @"
 SELECT
-c.id_Aluno, c.cpf, c.nome, c.nascimento, c.telefone, c.email,
+c.id_aluno, c.cpf, c.nome, c.nascimento, c.telefone, c.email,
 c.logradouro_id, c.numero, c.complemento, c.senha, c.foto,
 l.id_logradouro, l.cep, l.nome AS logradouro_nome, l.bairro, l.cidade, l.estado, l.pais
-FROM tb_Aluno c
+FROM tb_aluno c
 INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
 
     public async Task<Aluno?> ObterPorId(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            string query = $"{BaseSelectQuery} WHERE c.id_Aluno = @Id";
+            string query = $"{BaseSelectQuery} WHERE c.id_aluno = @Id";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -61,7 +61,7 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            int id = reader.GetInt32Value("id_Aluno");
+            int id = reader.GetInt32Value("id_aluno");
             string cpf = reader.GetStringValue("cpf");
             string nome = reader.GetStringValue(nomeColumn);
             DateOnly dataNascimento = reader.GetDateOnlyValue("nascimento");
@@ -102,7 +102,7 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            string query = FormatInsertQuery("INSERT INTO tb_Aluno (cpf, nome, nascimento, telefone, email, logradouro_id, numero, complemento, senha, foto) VALUES(@Cpf, @Nome, @Nascimento, @Telefone, @Email, @LogradouroId, @Numero, @Complemento, @Senha, @Foto)");
+            string query = FormatInsertQuery("INSERT INTO tb_aluno (cpf, nome, nascimento, telefone, email, logradouro_id, numero, complemento, senha, foto) VALUES(@Cpf, @Nome, @Nascimento, @Telefone, @Email, @LogradouroId, @Numero, @Complemento, @Senha, @Foto)");
 
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Cpf", entity.Cpf.Valor, DbType.String);
@@ -130,9 +130,9 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            string query = "UPDATE tb_Aluno SET cpf = @Cpf, nome = @Nome, nascimento = @Nascimento, telefone = @Telefone, email = @Email, logradouro_id =" +
+            string query = "UPDATE tb_aluno SET cpf = @Cpf, nome = @Nome, nascimento = @Nascimento, telefone = @Telefone, email = @Email, logradouro_id =" +
                 "        @LogradouroId, numero = @Numero, complemento = @Complemento, senha = @Senha, foto = @Foto WHERE" +
-                "        id_Aluno = @Id";
+                "        id_aluno = @Id";
 
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", entity.Id, DbType.Int32);
@@ -163,7 +163,7 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            string query = "DELETE FROM tb_Aluno WHERE id_Aluno = @Id";
+            string query = "DELETE FROM tb_aluno WHERE id_aluno = @Id";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             var result = await command.ExecuteNonQueryAsync(cancellationToken);
@@ -209,7 +209,7 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            string query = "SELECT COUNT(1) FROM tb_Aluno WHERE cpf = @Cpf AND (@Id IS NULL OR id_Aluno <> @Id)";
+            string query = "SELECT COUNT(1) FROM tb_aluno WHERE cpf = @Cpf AND (@Id IS NULL OR id_aluno <> @Id)";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Cpf", cpf.Valor, DbType.String);
             command.AddParameter("@Id", (object?)id ?? DBNull.Value, DbType.Int32);
@@ -225,7 +225,7 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            string query = "SELECT COUNT(1) FROM tb_Aluno WHERE email = @Email AND (@Id IS NULL OR id_Aluno <> @Id)";
+            string query = "SELECT COUNT(1) FROM tb_aluno WHERE email = @Email AND (@Id IS NULL OR id_aluno <> @Id)";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Email", email.Valor, DbType.String);
             command.AddParameter("@Id", (object?)id ?? DBNull.Value, DbType.Int32);
@@ -242,7 +242,7 @@ INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro";
     {
         try
         {
-            string query = "UPDATE tb_Aluno SET senha = @Senha WHERE id_Aluno = @Id";
+            string query = "UPDATE tb_aluno SET senha = @Senha WHERE id_aluno = @Id";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             command.AddParameter("@Senha", novaSenha.Valor, DbType.String);

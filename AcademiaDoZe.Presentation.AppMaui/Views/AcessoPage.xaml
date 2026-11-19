@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:dtos="clr-namespace:AcademiaDoZe.Application.DTOs;assembly=AcademiaDoZe.Application"
+             xmlns:viewmodels="clr-namespace:AcademiaDoZe.Presentation.AppMaui.ViewModels"
+             x:Class="AcademiaDoZe.Presentation.AppMaui.Views.AcessoPage"
+             x:DataType="viewmodels:AcessoViewModel"
+             Title="{Binding Title}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Atualizar" Command="{Binding CarregarCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe5d5;" Size="24" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+    <Grid Padding="15" RowDefinitions="Auto,*" RowSpacing="12">
+        <Border Style="{StaticResource CardBorder}">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Registrar entrada ou saída" Style="{StaticResource SubHeadline}" />
+                <VerticalStackLayout Spacing="8">
+                    <VerticalStackLayout.Triggers>
+                        <DataTrigger TargetType="VerticalStackLayout" Binding="{Binding IsBusy}" Value="True">
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </VerticalStackLayout.Triggers>
+                    <Picker Title="Tipo de pessoa" ItemsSource="{Binding TiposPessoa}" SelectedItem="{Binding TipoPessoa}" />
+                    <SearchBar Placeholder="Buscar por nome ou CPF" Text="{Binding Busca}" />
+                    <Picker Title="Selecione a pessoa" ItemsSource="{Binding Pessoas}" SelectedItem="{Binding PessoaSelecionada}">
+                        <Picker.ItemDisplayBinding>
+                            <Binding Path="Nome" x:DataType="dtos:PessoaDto" />
+                        </Picker.ItemDisplayBinding>
+                    </Picker>
+                </VerticalStackLayout>
+                <Label Text="{Binding PessoaSelecionada.Cpf, StringFormat='CPF {0}'}" />
+                <Label Text="{Binding Situacao}" FontAttributes="Bold" />
+                <Button Text="{Binding Acao}" Command="{Binding RegistrarCommand}" Style="{StaticResource ButtonPrimary}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                <Label Text="{Binding Mensagem}" />
+            </VerticalStackLayout>
+        </Border>
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Registros}" SelectionMode="None">
+            <CollectionView.Header>
+                <Label Text="Acessos registrados hoje" Style="{StaticResource SubHeadline}" Margin="0,0,0,10" />
+            </CollectionView.Header>
+            <CollectionView.EmptyView>
+                <Label Text="Nenhum acesso registrado hoje." HorizontalTextAlignment="Center" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:AcessoRegistro">
+                    <Border Style="{StaticResource CardBorder}" Padding="12" Margin="0,0,0,6">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto">
+                            <Label Text="{Binding Pessoa.Nome}" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="{Binding DataHora, StringFormat='{0:HH:mm:ss}'}" HorizontalTextAlignment="End" />
+                            <Label Grid.Row="1" Text="{Binding TipoPessoa}" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Movimento}" HorizontalTextAlignment="End" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

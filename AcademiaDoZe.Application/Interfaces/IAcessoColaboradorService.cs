@@ -6,6 +6,10 @@ namespace AcademiaDoZe.Application.Interfaces;
 public interface IAcessoColaboradorService
 {
     /// <summary>
+    /// Registra entrada ou saída do colaborador.
+    /// </summary>
+    Task<AcessoColaboradorDto> RegistrarAsync(int colaboradorId, DateTime dataHora, bool entrada, CancellationToken cancellationToken = default);
+    /// <summary>
     /// Obtém um registro de acesso pelo seu identificador único.
     /// </summary>
     Task<AcessoColaboradorDto?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default);

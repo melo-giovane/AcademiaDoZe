@@ -6,20 +6,22 @@ using System.Data;
 using System.Data.Common;
 namespace AcademiaDoZe.Infrastructure.Repositories;
 
-public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRepository
+public class AcessoColaboradorRepository : AcessoRepository, IAcessoColaboradorRepository
 {
+    private const int PessoaTipo = 1;
     public AcessoColaboradorRepository(string connectionString, DatabaseType databaseType) : base(connectionString, databaseType)
     {
     }
-    private static string BaseSelectQuery => """
+    private static string BaseSelectQuery => $"""
         SELECT
-        ac.id_acesso_colaborador, ac.colaborador_id, ac.data_hora,
+        ac.id_acesso AS id_acesso_colaborador, ac.data_hora,
         c.id_colaborador, c.cpf, c.nome AS colaborador_nome, c.nascimento, c.telefone, c.email,
         c.logradouro_id, c.numero, c.complemento, c.senha, c.foto, c.admissao, c.tipo, c.vinculo,
         l.id_logradouro, l.cep, l.nome AS logradouro_nome, l.bairro, l.cidade, l.estado, l.pais
-        FROM tb_acesso_colaborador ac
-        INNER JOIN tb_colaborador c ON ac.colaborador_id = c.id_colaborador
+        FROM tb_acesso ac
+        INNER JOIN tb_colaborador c ON ac.pessoa_id = c.id_colaborador
         INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro
+        WHERE ac.pessoa_tipo = {PessoaTipo}
         """;
 
     public static AcessoColaborador Map(DbDataReader reader)
@@ -46,7 +48,7 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
     {
         try
         {
-            string query = $"{BaseSelectQuery} WHERE ac.id_acesso_colaborador = @Id";
+            string query = $"{BaseSelectQuery} AND ac.id_acesso = @Id";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -62,7 +64,7 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
     {
         try
         {
-            string query = $"{BaseSelectQuery} ORDER BY ac.data_hora DESC";
+            string query = $"{BaseSelectQuery} ORDER BY ac.data_hora DESC, ac.id_acesso DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             var acessos = new List<AcessoColaborador>();
@@ -80,15 +82,22 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
 
     public async Task<AcessoColaborador> Adicionar(AcessoColaborador entity, CancellationToken cancellationToken = default)
     {
+        return (await AdicionarAsync(entity, null, cancellationToken))!;
+    }
+
+    public Task<AcessoColaborador?> Registrar(AcessoColaborador acesso, bool entrada, CancellationToken cancellationToken = default)
+    {
+        return AdicionarAsync(acesso, entrada, cancellationToken);
+    }
+
+    private async Task<AcessoColaborador?> AdicionarAsync(AcessoColaborador entity, bool? entrada, CancellationToken cancellationToken)
+    {
         try
         {
-            string query = FormatInsertQuery("INSERT INTO tb_acesso_colaborador (colaborador_id, data_hora) VALUES (@ColaboradorId, @DataHora)");
-            await using var command = await CreateCommandAsync(query, cancellationToken);
-            command.AddParameter("@ColaboradorId", entity.ColaboradorId, DbType.Int32);
-            command.AddParameter("@DataHora", entity.DataHora, DbType.DateTime);
-            int id = await command.ExecuteScalarIdAsync("ERRO_ADICIONAR_ACESSO_COLABORADOR", "Falha ao obter ID inserido para o acesso de colaborador.", cancellationToken);
+            int? id = await AdicionarAcesso(PessoaTipo, entity.ColaboradorId, entity.DataHora, entrada, cancellationToken);
+            if (!id.HasValue) return null;
             var idProperty = typeof(Entity).GetProperty("Id");
-            idProperty?.SetValue(entity, id);
+            idProperty?.SetValue(entity, id.Value);
             return entity;
         }
         catch (DbException ex)
@@ -101,7 +110,7 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
     {
         try
         {
-            string query = "UPDATE tb_acesso_colaborador SET colaborador_id = @ColaboradorId, data_hora = @DataHora WHERE id_acesso_colaborador = @Id";
+            string query = $"UPDATE tb_acesso SET pessoa_id = @ColaboradorId, data_hora = @DataHora WHERE id_acesso = @Id AND pessoa_tipo = {PessoaTipo}";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", entity.Id, DbType.Int32);
             command.AddParameter("@ColaboradorId", entity.ColaboradorId, DbType.Int32);
@@ -123,7 +132,7 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
     {
         try
         {
-            string query = "DELETE FROM tb_acesso_colaborador WHERE id_acesso_colaborador = @Id";
+            string query = $"DELETE FROM tb_acesso WHERE id_acesso = @Id AND pessoa_tipo = {PessoaTipo}";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             var result = await command.ExecuteNonQueryAsync(cancellationToken);
@@ -140,11 +149,11 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
         try
         {
             var filtros = new List<string>();
-            if (colaboradorId.HasValue) filtros.Add("ac.colaborador_id = @ColaboradorId");
+            if (colaboradorId.HasValue) filtros.Add("ac.pessoa_id = @ColaboradorId");
             if (inicio.HasValue) filtros.Add("ac.data_hora >= @Inicio");
             if (fim.HasValue) filtros.Add("ac.data_hora < @FimExclusivo");
-            string where = filtros.Count > 0 ? $" WHERE {string.Join(" AND ", filtros)}" : string.Empty;
-            string query = $"{BaseSelectQuery}{where} ORDER BY ac.data_hora DESC";
+            string where = filtros.Count > 0 ? $" AND {string.Join(" AND ", filtros)}" : string.Empty;
+            string query = $"{BaseSelectQuery}{where} ORDER BY ac.data_hora DESC, ac.id_acesso DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             if (colaboradorId.HasValue) command.AddParameter("@ColaboradorId", colaboradorId.Value, DbType.Int32);
             if (inicio.HasValue) command.AddParameter("@Inicio", inicio.Value.ToDateTime(TimeOnly.MinValue), DbType.DateTime);
@@ -167,7 +176,7 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
     {
         try
         {
-            string query = $"{BaseSelectQuery} WHERE ac.colaborador_id = @ColaboradorId ORDER BY ac.data_hora DESC";
+            string query = $"{BaseSelectQuery} AND ac.pessoa_id = @ColaboradorId ORDER BY ac.data_hora DESC, ac.id_acesso DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@ColaboradorId", colaboradorId, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -183,7 +192,7 @@ public class AcessoColaboradorRepository : BaseRepository, IAcessoColaboradorRep
     {
         try
         {
-            string query = "SELECT data_hora FROM tb_acesso_colaborador WHERE colaborador_id = @ColaboradorId AND data_hora >= @Inicio AND data_hora < @Fim ORDER BY data_hora";
+            string query = $"SELECT data_hora FROM tb_acesso WHERE pessoa_tipo = {PessoaTipo} AND pessoa_id = @ColaboradorId AND data_hora >= @Inicio AND data_hora < @Fim ORDER BY data_hora";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@ColaboradorId", colaboradorId, DbType.Int32);
             command.AddParameter("@Inicio", data.ToDateTime(TimeOnly.MinValue), DbType.DateTime);

@@ -6,19 +6,21 @@ using System.Data;
 using System.Data.Common;
 namespace AcademiaDoZe.Infrastructure.Repositories;
 
-public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
+public class AcessoAlunoRepository : AcessoRepository, IAcessoAlunoRepository
 {
+    private const int PessoaTipo = 0;
     public AcessoAlunoRepository(string connectionString, DatabaseType databaseType) : base(connectionString, databaseType)
     {
     }
-    private static string BaseSelectQuery => """
+    private static string BaseSelectQuery => $"""
         SELECT
-        aa.id_acesso_aluno, aa.aluno_id, aa.data_hora,
+        aa.id_acesso AS id_acesso_aluno, aa.data_hora,
         a.id_aluno, a.cpf, a.nome AS aluno_nome, a.nascimento, a.telefone, a.email, a.logradouro_id, a.numero, a.complemento, a.senha, a.foto,
         l.id_logradouro, l.cep, l.nome AS logradouro_nome, l.bairro, l.cidade, l.estado, l.pais
-        FROM tb_acesso_aluno aa
-        INNER JOIN tb_aluno a ON aa.aluno_id = a.id_aluno
+        FROM tb_acesso aa
+        INNER JOIN tb_aluno a ON aa.pessoa_id = a.id_aluno
         INNER JOIN tb_logradouro l ON a.logradouro_id = l.id_logradouro
+        WHERE aa.pessoa_tipo = {PessoaTipo}
         """;
 
     public static AcessoAluno Map(DbDataReader reader)
@@ -45,7 +47,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = $"{BaseSelectQuery} WHERE aa.id_acesso_aluno = @Id";
+            string query = $"{BaseSelectQuery} AND aa.id_acesso = @Id";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -61,7 +63,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = $"{BaseSelectQuery} ORDER BY aa.data_hora DESC";
+            string query = $"{BaseSelectQuery} ORDER BY aa.data_hora DESC, aa.id_acesso DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             var acessos = new List<AcessoAluno>();
@@ -79,15 +81,22 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
 
     public async Task<AcessoAluno> Adicionar(AcessoAluno entity, CancellationToken cancellationToken = default)
     {
+        return (await AdicionarAsync(entity, null, cancellationToken))!;
+    }
+
+    public Task<AcessoAluno?> Registrar(AcessoAluno acesso, bool entrada, CancellationToken cancellationToken = default)
+    {
+        return AdicionarAsync(acesso, entrada, cancellationToken);
+    }
+
+    private async Task<AcessoAluno?> AdicionarAsync(AcessoAluno entity, bool? entrada, CancellationToken cancellationToken)
+    {
         try
         {
-            string query = FormatInsertQuery("INSERT INTO tb_acesso_aluno (aluno_id, data_hora) VALUES (@AlunoId, @DataHora)");
-            await using var command = await CreateCommandAsync(query, cancellationToken);
-            command.AddParameter("@AlunoId", entity.AlunoId, DbType.Int32);
-            command.AddParameter("@DataHora", entity.DataHora, DbType.DateTime);
-            int id = await command.ExecuteScalarIdAsync("ERRO_ADICIONAR_ACESSO_ALUNO", "Falha ao obter ID inserido para o acesso de aluno.", cancellationToken);
+            int? id = await AdicionarAcesso(PessoaTipo, entity.AlunoId, entity.DataHora, entrada, cancellationToken);
+            if (!id.HasValue) return null;
             var idProperty = typeof(Entity).GetProperty("Id");
-            idProperty?.SetValue(entity, id);
+            idProperty?.SetValue(entity, id.Value);
             return entity;
         }
         catch (DbException ex)
@@ -100,7 +109,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = "UPDATE tb_acesso_aluno SET aluno_id = @AlunoId, data_hora = @DataHora WHERE id_acesso_aluno = @Id";
+            string query = $"UPDATE tb_acesso SET pessoa_id = @AlunoId, data_hora = @DataHora WHERE id_acesso = @Id AND pessoa_tipo = {PessoaTipo}";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", entity.Id, DbType.Int32);
             command.AddParameter("@AlunoId", entity.AlunoId, DbType.Int32);
@@ -122,7 +131,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = "DELETE FROM tb_acesso_aluno WHERE id_acesso_aluno = @Id";
+            string query = $"DELETE FROM tb_acesso WHERE id_acesso = @Id AND pessoa_tipo = {PessoaTipo}";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Id", id, DbType.Int32);
             var result = await command.ExecuteNonQueryAsync(cancellationToken);
@@ -139,11 +148,11 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
         try
         {
             var filtros = new List<string>();
-            if (alunoId.HasValue) filtros.Add("aa.aluno_id = @AlunoId");
+            if (alunoId.HasValue) filtros.Add("aa.pessoa_id = @AlunoId");
             if (inicio.HasValue) filtros.Add("aa.data_hora >= @Inicio");
             if (fim.HasValue) filtros.Add("aa.data_hora < @FimExclusivo");
-            string where = filtros.Count > 0 ? $" WHERE {string.Join(" AND ", filtros)}" : string.Empty;
-            string query = $"{BaseSelectQuery}{where} ORDER BY aa.data_hora DESC";
+            string where = filtros.Count > 0 ? $" AND {string.Join(" AND ", filtros)}" : string.Empty;
+            string query = $"{BaseSelectQuery}{where} ORDER BY aa.data_hora DESC, aa.id_acesso DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             if (alunoId.HasValue) command.AddParameter("@AlunoId", alunoId.Value, DbType.Int32);
             if (inicio.HasValue) command.AddParameter("@Inicio", inicio.Value.ToDateTime(TimeOnly.MinValue), DbType.DateTime);
@@ -166,7 +175,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = $"{BaseSelectQuery} WHERE aa.aluno_id = @AlunoId ORDER BY aa.data_hora DESC";
+            string query = $"{BaseSelectQuery} AND aa.pessoa_id = @AlunoId ORDER BY aa.data_hora DESC, aa.id_acesso DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@AlunoId", alunoId, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -182,7 +191,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = "SELECT COUNT(*) FROM tb_acesso_aluno WHERE aluno_id = @AlunoId AND data_hora >= @Inicio AND data_hora < @Fim";
+            string query = $"SELECT COUNT(*) FROM tb_acesso WHERE pessoa_tipo = {PessoaTipo} AND pessoa_id = @AlunoId AND data_hora >= @Inicio AND data_hora < @Fim";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             var hoje = DateTime.Today;
             command.AddParameter("@AlunoId", alunoId, DbType.Int32);
@@ -203,7 +212,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
         {
             string horaExpr = GetDateHourExpression("data_hora");
             string mesExpr = GetDateMonthExpression("data_hora");
-            string query = $"SELECT {horaExpr} AS hora, COUNT(*) AS qtd FROM tb_acesso_aluno WHERE {mesExpr} = @Mes GROUP BY {horaExpr} ORDER BY qtd DESC";
+            string query = $"SELECT {horaExpr} AS hora, COUNT(*) AS qtd FROM tb_acesso WHERE pessoa_tipo = {PessoaTipo} AND {mesExpr} = @Mes GROUP BY {horaExpr} ORDER BY qtd DESC";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Mes", mes, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -227,7 +236,7 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
         try
         {
             string mesExpr = GetDateMonthExpression("data_hora");
-            string query = $"SELECT aluno_id, data_hora FROM tb_acesso_aluno WHERE {mesExpr} = @Mes ORDER BY aluno_id, data_hora";
+            string query = $"SELECT pessoa_id AS aluno_id, data_hora FROM tb_acesso WHERE pessoa_tipo = {PessoaTipo} AND {mesExpr} = @Mes ORDER BY pessoa_id, data_hora";
             await using var command = await CreateCommandAsync(query, cancellationToken);
             command.AddParameter("@Mes", mes, DbType.Int32);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -276,8 +285,8 @@ public class AcessoAlunoRepository : BaseRepository, IAcessoAlunoRepository
                 FROM tb_aluno a
                 INNER JOIN tb_logradouro l ON a.logradouro_id = l.id_logradouro
                 WHERE a.id_aluno NOT IN (
-                    SELECT DISTINCT aa.aluno_id FROM tb_acesso_aluno aa
-                    WHERE aa.data_hora >= {limite}
+                    SELECT DISTINCT aa.pessoa_id FROM tb_acesso aa
+                    WHERE aa.pessoa_tipo = {PessoaTipo} AND aa.data_hora >= {limite}
                 )
                 ORDER BY a.nome
                 """;

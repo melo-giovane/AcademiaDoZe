@@ -6,6 +6,10 @@ namespace AcademiaDoZe.Application.Interfaces;
 public interface IAcessoAlunoService
 {
     /// <summary>
+    /// Registra entrada ou saída do aluno. A entrada exige matrícula ativa.
+    /// </summary>
+    Task<AcessoAlunoDto> RegistrarAsync(int alunoId, DateTime dataHora, bool entrada, CancellationToken cancellationToken = default);
+    /// <summary>
     /// Obtém um registro de acesso pelo seu identificador único.
     /// </summary>
     Task<AcessoAlunoDto?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default);

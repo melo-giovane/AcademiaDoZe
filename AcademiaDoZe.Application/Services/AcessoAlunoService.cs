@@ -1,6 +1,7 @@
 using AcademiaDoZe.Application.DTOs;//Giovane Melo
 using AcademiaDoZe.Application.Interfaces;
 using AcademiaDoZe.Application.Mappings;
+using AcademiaDoZe.Domain.Entities;
 using AcademiaDoZe.Domain.Repositories;
 namespace AcademiaDoZe.Application.Services;
 
@@ -8,10 +9,30 @@ public class AcessoAlunoService : IAcessoAlunoService
 {
     private readonly Func<IAcessoAlunoRepository> _acessoRepoFactory;
     private readonly Func<IAlunoRepository> _alunoRepoFactory;
-    public AcessoAlunoService(Func<IAcessoAlunoRepository> acessoRepoFactory, Func<IAlunoRepository> alunoRepoFactory)
+    private readonly Func<IMatriculaRepository> _matriculaRepoFactory;
+    public AcessoAlunoService(Func<IAcessoAlunoRepository> acessoRepoFactory, Func<IAlunoRepository> alunoRepoFactory, Func<IMatriculaRepository> matriculaRepoFactory)
     {
         _acessoRepoFactory = acessoRepoFactory ?? throw new ArgumentNullException(nameof(acessoRepoFactory));
         _alunoRepoFactory = alunoRepoFactory ?? throw new ArgumentNullException(nameof(alunoRepoFactory));
+        _matriculaRepoFactory = matriculaRepoFactory ?? throw new ArgumentNullException(nameof(matriculaRepoFactory));
+    }
+    public async Task<AcessoAlunoDto> RegistrarAsync(int alunoId, DateTime dataHora, bool entrada, CancellationToken cancellationToken = default)
+    {
+        var aluno = await _alunoRepoFactory().ObterPorId(alunoId, cancellationToken)
+        ?? throw new InvalidOperationException($"Aluno com ID {alunoId} não encontrado.");
+        if (entrada)
+        {
+            var dia = DateOnly.FromDateTime(dataHora);
+            var matriculas = await _matriculaRepoFactory().ObterPorAluno(alunoId, cancellationToken);
+            if (!matriculas.Any(matricula => matricula.DataInicio <= dia && dia <= matricula.DataFim))
+                throw new InvalidOperationException("Acesso negado: o aluno não possui matrícula ativa.");
+        }
+        var result = AcessoAluno.Criar(0, aluno, dataHora);
+        if (result.IsFailure)
+            throw new InvalidOperationException("Os acessos podem ser registrados das 06:00 às 22:00.");
+        var registrado = await _acessoRepoFactory().Registrar(result.Value!, entrada, cancellationToken)
+        ?? throw new InvalidOperationException("A entrada ou saída solicitada não está disponível. Atualize o histórico de acessos.");
+        return registrado.ToDto(aluno.ToDto());
     }
     public async Task<AcessoAlunoDto?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {

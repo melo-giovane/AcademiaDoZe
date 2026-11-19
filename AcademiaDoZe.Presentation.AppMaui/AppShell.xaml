@@ -43,6 +43,12 @@ Route="MainPage" />
         </FlyoutItem.Icon>
         <ShellContent ContentTemplate="{DataTemplate views:MatriculaListPage}" Route="matriculas" />
     </FlyoutItem>
+    <FlyoutItem Title="Controle de Acesso">
+        <FlyoutItem.Icon>
+            <FontImageSource FontFamily="MaterialIcons" Size="24" Glyph="&#xe897;" />
+        </FlyoutItem.Icon>
+        <ShellContent ContentTemplate="{DataTemplate views:AcessoPage}" Route="acessos" />
+    </FlyoutItem>
     <FlyoutItem Title="Configurações">
         <FlyoutItem.Icon>
             <FontImageSource FontFamily="MaterialIcons" Size="24" Glyph="&#xe8b8;" />

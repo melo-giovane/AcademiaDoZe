@@ -1,6 +1,7 @@
 using AcademiaDoZe.Application.DTOs;//Giovane Melo
 using AcademiaDoZe.Application.Interfaces;
 using AcademiaDoZe.Application.Mappings;
+using AcademiaDoZe.Domain.Entities;
 using AcademiaDoZe.Domain.Repositories;
 namespace AcademiaDoZe.Application.Services;
 
@@ -12,6 +13,17 @@ public class AcessoColaboradorService : IAcessoColaboradorService
     {
         _acessoRepoFactory = acessoRepoFactory ?? throw new ArgumentNullException(nameof(acessoRepoFactory));
         _colaboradorRepoFactory = colaboradorRepoFactory ?? throw new ArgumentNullException(nameof(colaboradorRepoFactory));
+    }
+    public async Task<AcessoColaboradorDto> RegistrarAsync(int colaboradorId, DateTime dataHora, bool entrada, CancellationToken cancellationToken = default)
+    {
+        var colaborador = await _colaboradorRepoFactory().ObterPorId(colaboradorId, cancellationToken)
+        ?? throw new InvalidOperationException($"Colaborador com ID {colaboradorId} não encontrado.");
+        var result = AcessoColaborador.Criar(0, colaborador, dataHora);
+        if (result.IsFailure)
+            throw new InvalidOperationException("Os acessos podem ser registrados das 06:00 às 22:00.");
+        var registrado = await _acessoRepoFactory().Registrar(result.Value!, entrada, cancellationToken)
+        ?? throw new InvalidOperationException("A entrada ou saída solicitada não está disponível. Atualize o histórico de acessos.");
+        return registrado.ToDto(colaborador.ToDto());
     }
     public async Task<AcessoColaboradorDto?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {

@@ -3,6 +3,7 @@ namespace AcademiaDoZe.Domain.Repositories;
 
 public interface IAcessoAlunoRepository : IRepository<AcessoAluno>
 {
+    Task<AcessoAluno?> Registrar(AcessoAluno acesso, bool entrada, CancellationToken cancellationToken = default);
     Task<IEnumerable<AcessoAluno>> ObterAcessosPorAlunoPeriodo(int? alunoId = null, DateOnly? inicio = null, DateOnly? fim = null, CancellationToken cancellationToken = default);
     Task<AcessoAluno?> ObterUltimoAcesso(int alunoId, CancellationToken cancellationToken = default);
     Task<bool> EstaNaAcademia(int alunoId, CancellationToken cancellationToken = default);
@@ -15,6 +16,3 @@ public interface IAcessoAlunoRepository : IRepository<AcessoAluno>
     // alunos que não registraram acesso nos últimos x dias
     Task<IEnumerable<Aluno>> ObterAlunosSemAcessoNosUltimosDias(int dias, CancellationToken cancellationToken = default);
 }
-// Validar se possui matrícula ativa.
-// Na entrada, mostrar quanto tempo ainda tem de plano.
-// Na saída, mostrar
