@@ -103,3 +103,12 @@ CREATE INDEX IX_tb_acesso_pessoa ON tb_acesso(pessoa_tipo, pessoa_id);
 CREATE INDEX IX_tb_acesso_data_hora ON tb_acesso(data_hora);
 
 END;
+
+IF OBJECT_ID(N'dbo.tb_acesso_movimento', N'U') IS NULL BEGIN CREATE TABLE tb_acesso_movimento (
+  id_acesso INT NOT NULL,
+  entrada BIT NOT NULL,
+  CONSTRAINT PK_tb_acesso_movimento PRIMARY KEY (id_acesso),
+  CONSTRAINT FK_tb_acesso_movimento_tb_acesso FOREIGN KEY (id_acesso) REFERENCES tb_acesso(id_acesso) ON DELETE CASCADE
+);
+
+END;

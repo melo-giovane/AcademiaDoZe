@@ -14,11 +14,12 @@ public class AcessoColaboradorRepository : AcessoRepository, IAcessoColaboradorR
     }
     private static string BaseSelectQuery => $"""
         SELECT
-        ac.id_acesso AS id_acesso_colaborador, ac.data_hora,
+        ac.id_acesso AS id_acesso_colaborador, ac.data_hora, movimento.entrada,
         c.id_colaborador, c.cpf, c.nome AS colaborador_nome, c.nascimento, c.telefone, c.email,
         c.logradouro_id, c.numero, c.complemento, c.senha, c.foto, c.admissao, c.tipo, c.vinculo,
         l.id_logradouro, l.cep, l.nome AS logradouro_nome, l.bairro, l.cidade, l.estado, l.pais
         FROM tb_acesso ac
+        LEFT JOIN tb_acesso_movimento movimento ON movimento.id_acesso = ac.id_acesso
         INNER JOIN tb_colaborador c ON ac.pessoa_id = c.id_colaborador
         INNER JOIN tb_logradouro l ON c.logradouro_id = l.id_logradouro
         WHERE ac.pessoa_tipo = {PessoaTipo}
@@ -31,7 +32,7 @@ public class AcessoColaboradorRepository : AcessoRepository, IAcessoColaboradorR
             int id = reader.GetInt32Value("id_acesso_colaborador");
             DateTime dataHora = reader.GetDateTimeValue("data_hora");
             var colaborador = ColaboradorRepository.Map(reader, "colaborador_nome");
-            var result = AcessoColaborador.Criar(id, colaborador, dataHora);
+            var result = AcessoColaborador.Criar(id, colaborador, dataHora, LerEntrada(reader));
             if (result.IsFailure)
             {
                 throw new InfrastructureException("ERRO_DOMINIO_MAPEAMENTO", $"Erro de domínio ao mapear acesso de colaborador ID {id}: {string.Join(", ", result.Notifications.Select(n => n.Mensagem))}");
@@ -82,7 +83,8 @@ public class AcessoColaboradorRepository : AcessoRepository, IAcessoColaboradorR
 
     public async Task<AcessoColaborador> Adicionar(AcessoColaborador entity, CancellationToken cancellationToken = default)
     {
-        return (await AdicionarAsync(entity, null, cancellationToken))!;
+        return await AdicionarAsync(entity, entity.Entrada, cancellationToken)
+            ?? throw new InfrastructureException("ACESSO_COLABORADOR_NAO_DISPONIVEL", "A entrada ou saída do colaborador não está disponível.");
     }
 
     public Task<AcessoColaborador?> Registrar(AcessoColaborador acesso, bool entrada, CancellationToken cancellationToken = default)
@@ -94,10 +96,14 @@ public class AcessoColaboradorRepository : AcessoRepository, IAcessoColaboradorR
     {
         try
         {
-            int? id = await AdicionarAcesso(PessoaTipo, entity.ColaboradorId, entity.DataHora, entrada, cancellationToken);
-            if (!id.HasValue) return null;
+            var registro = await AdicionarAcesso(PessoaTipo, entity.ColaboradorId, entity.DataHora, entrada, cancellationToken);
+            if (registro is not { } gravado) return null;
             var idProperty = typeof(Entity).GetProperty("Id");
-            idProperty?.SetValue(entity, id.Value);
+            idProperty?.SetValue(entity, gravado.Id);
+            if (entity.DataHora != gravado.DataHora)
+                typeof(AcessoColaborador).GetProperty(nameof(AcessoColaborador.DataHora))?.SetValue(entity, gravado.DataHora);
+            if (entity.Entrada != entrada)
+                typeof(AcessoColaborador).GetProperty(nameof(AcessoColaborador.Entrada))?.SetValue(entity, entrada);
             return entity;
         }
         catch (DbException ex)

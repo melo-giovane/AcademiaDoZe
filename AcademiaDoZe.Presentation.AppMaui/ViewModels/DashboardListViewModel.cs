@@ -70,5 +70,7 @@ public partial class DashboardListViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToMatriculasAsync() => await Shell.Current.GoToAsync("//matriculas");
     [RelayCommand]
+    private async Task NavigateToAcessosAsync() => await Shell.Current.GoToAsync("//acessos");
+    [RelayCommand]
     private async Task NavigateToConfiguracoesAsync() => await Shell.Current.GoToAsync("//configuracoes");
 }

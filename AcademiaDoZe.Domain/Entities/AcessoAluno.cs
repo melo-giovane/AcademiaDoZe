@@ -5,21 +5,23 @@ public class AcessoAluno : Entity, IAggregateRoot
 {
     public int AlunoId { get; private set; }
     public DateTime DataHora { get; private set; }
-    private AcessoAluno(int id, int alunoId, DateTime dataHora) : base(id)
+    public bool? Entrada { get; private set; }
+    private AcessoAluno(int id, int alunoId, DateTime dataHora, bool? entrada) : base(id)
     {
         AlunoId = alunoId;
         DataHora = dataHora;
+        Entrada = entrada;
     }
-    public static Result<AcessoAluno> Criar(int id, Aluno aluno, DateTime dataHora)
+    public static Result<AcessoAluno> Criar(int id, Aluno aluno, DateTime dataHora, bool? entrada = null)
     {
         var notifications = new List<Notification>();
         if (aluno == null)
             notifications.Add(new Notification("Aluno", "ALUNO_INVALIDO"));
-        if (dataHora.TimeOfDay < new TimeSpan(6, 0, 0) || dataHora.TimeOfDay > new TimeSpan(22, 0, 0))
-            notifications.Add(new Notification("DataHora", "DATA_HORA_INTERVALO_INVALIDO"));
+        if (dataHora == default)
+            notifications.Add(new Notification("DataHora", "DATA_HORA_INVALIDA"));
         if (notifications.Count != 0)
             return Result<AcessoAluno>.Failure(notifications);
-        return Result<AcessoAluno>.Success(new AcessoAluno(id, aluno!.Id, dataHora));
+        return Result<AcessoAluno>.Success(new AcessoAluno(id, aluno!.Id, dataHora, entrada));
     }
 }
 // Dependem da persistência:

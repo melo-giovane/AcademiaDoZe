@@ -14,10 +14,11 @@ public class AcessoAlunoRepository : AcessoRepository, IAcessoAlunoRepository
     }
     private static string BaseSelectQuery => $"""
         SELECT
-        aa.id_acesso AS id_acesso_aluno, aa.data_hora,
+        aa.id_acesso AS id_acesso_aluno, aa.data_hora, movimento.entrada,
         a.id_aluno, a.cpf, a.nome AS aluno_nome, a.nascimento, a.telefone, a.email, a.logradouro_id, a.numero, a.complemento, a.senha, a.foto,
         l.id_logradouro, l.cep, l.nome AS logradouro_nome, l.bairro, l.cidade, l.estado, l.pais
         FROM tb_acesso aa
+        LEFT JOIN tb_acesso_movimento movimento ON movimento.id_acesso = aa.id_acesso
         INNER JOIN tb_aluno a ON aa.pessoa_id = a.id_aluno
         INNER JOIN tb_logradouro l ON a.logradouro_id = l.id_logradouro
         WHERE aa.pessoa_tipo = {PessoaTipo}
@@ -30,7 +31,7 @@ public class AcessoAlunoRepository : AcessoRepository, IAcessoAlunoRepository
             int id = reader.GetInt32Value("id_acesso_aluno");
             DateTime dataHora = reader.GetDateTimeValue("data_hora");
             var aluno = AlunoRepository.Map(reader, "aluno_nome");
-            var result = AcessoAluno.Criar(id, aluno, dataHora);
+            var result = AcessoAluno.Criar(id, aluno, dataHora, LerEntrada(reader));
             if (result.IsFailure)
             {
                 throw new InfrastructureException("ERRO_DOMINIO_MAPEAMENTO", $"Erro de domínio ao mapear acesso de aluno ID {id}: {string.Join(", ", result.Notifications.Select(n => n.Mensagem))}");
@@ -81,7 +82,8 @@ public class AcessoAlunoRepository : AcessoRepository, IAcessoAlunoRepository
 
     public async Task<AcessoAluno> Adicionar(AcessoAluno entity, CancellationToken cancellationToken = default)
     {
-        return (await AdicionarAsync(entity, null, cancellationToken))!;
+        return await AdicionarAsync(entity, entity.Entrada, cancellationToken)
+            ?? throw new InfrastructureException("ACESSO_ALUNO_NAO_DISPONIVEL", "A entrada ou saída do aluno não está disponível.");
     }
 
     public Task<AcessoAluno?> Registrar(AcessoAluno acesso, bool entrada, CancellationToken cancellationToken = default)
@@ -93,10 +95,14 @@ public class AcessoAlunoRepository : AcessoRepository, IAcessoAlunoRepository
     {
         try
         {
-            int? id = await AdicionarAcesso(PessoaTipo, entity.AlunoId, entity.DataHora, entrada, cancellationToken);
-            if (!id.HasValue) return null;
+            var registro = await AdicionarAcesso(PessoaTipo, entity.AlunoId, entity.DataHora, entrada, cancellationToken);
+            if (registro is not { } gravado) return null;
             var idProperty = typeof(Entity).GetProperty("Id");
-            idProperty?.SetValue(entity, id.Value);
+            idProperty?.SetValue(entity, gravado.Id);
+            if (entity.DataHora != gravado.DataHora)
+                typeof(AcessoAluno).GetProperty(nameof(AcessoAluno.DataHora))?.SetValue(entity, gravado.DataHora);
+            if (entity.Entrada != entrada)
+                typeof(AcessoAluno).GetProperty(nameof(AcessoAluno.Entrada))?.SetValue(entity, entrada);
             return entity;
         }
         catch (DbException ex)
@@ -191,14 +197,7 @@ public class AcessoAlunoRepository : AcessoRepository, IAcessoAlunoRepository
     {
         try
         {
-            string query = $"SELECT COUNT(*) FROM tb_acesso WHERE pessoa_tipo = {PessoaTipo} AND pessoa_id = @AlunoId AND data_hora >= @Inicio AND data_hora < @Fim";
-            await using var command = await CreateCommandAsync(query, cancellationToken);
-            var hoje = DateTime.Today;
-            command.AddParameter("@AlunoId", alunoId, DbType.Int32);
-            command.AddParameter("@Inicio", hoje, DbType.DateTime);
-            command.AddParameter("@Fim", hoje.AddDays(1), DbType.DateTime);
-            int count = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
-            return count % 2 != 0;
+            return await ObterPresencaAtual(PessoaTipo, alunoId, cancellationToken);
         }
         catch (DbException ex)
         {

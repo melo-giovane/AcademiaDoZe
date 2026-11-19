@@ -99,3 +99,9 @@ CREATE TABLE IF NOT EXISTS tb_acesso (
 CREATE INDEX IF NOT EXISTS ix_tb_acesso_pessoa ON tb_acesso(pessoa_tipo, pessoa_id);
 
 CREATE INDEX IF NOT EXISTS ix_tb_acesso_data_hora ON tb_acesso(data_hora);
+
+CREATE TABLE IF NOT EXISTS tb_acesso_movimento (
+  id_acesso INTEGER PRIMARY KEY,
+  entrada INTEGER NOT NULL CHECK (entrada IN (0, 1)),
+  FOREIGN KEY (id_acesso) REFERENCES tb_acesso(id_acesso) ON DELETE CASCADE
+);

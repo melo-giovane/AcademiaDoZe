@@ -38,7 +38,7 @@ public interface IAcessoAlunoService
     /// </summary>
     Task<AcessoAlunoDto?> ObterUltimoAcessoAsync(int alunoId, CancellationToken cancellationToken = default);
     /// <summary>
-    /// Verifica se o aluno está atualmente na academia (número ímpar de acessos no dia).
+    /// Verifica se o aluno possui uma entrada sem saída registrada.
     /// </summary>
     Task<bool> EstaNaAcademiaAsync(int alunoId, CancellationToken cancellationToken = default);
     /// <summary>

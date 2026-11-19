@@ -20,6 +20,9 @@ public class AcessoAlunoService : IAcessoAlunoService
     {
         var aluno = await _alunoRepoFactory().ObterPorId(alunoId, cancellationToken)
         ?? throw new InvalidOperationException($"Aluno com ID {alunoId} não encontrado.");
+        var result = AcessoAluno.Criar(0, aluno, dataHora, entrada);
+        if (result.IsFailure)
+            throw new InvalidOperationException("Informe uma data e hora válidas para registrar o acesso.");
         if (entrada)
         {
             var dia = DateOnly.FromDateTime(dataHora);
@@ -27,11 +30,10 @@ public class AcessoAlunoService : IAcessoAlunoService
             if (!matriculas.Any(matricula => matricula.DataInicio <= dia && dia <= matricula.DataFim))
                 throw new InvalidOperationException("Acesso negado: o aluno não possui matrícula ativa.");
         }
-        var result = AcessoAluno.Criar(0, aluno, dataHora);
-        if (result.IsFailure)
-            throw new InvalidOperationException("Os acessos podem ser registrados das 06:00 às 22:00.");
         var registrado = await _acessoRepoFactory().Registrar(result.Value!, entrada, cancellationToken)
-        ?? throw new InvalidOperationException("A entrada ou saída solicitada não está disponível. Atualize o histórico de acessos.");
+        ?? throw new InvalidOperationException(entrada
+            ? "Não foi possível registrar a entrada. Verifique se já há uma entrada em aberto no histórico."
+            : "Não foi possível registrar a saída. Verifique se há uma entrada em aberto no histórico.");
         return registrado.ToDto(aluno.ToDto());
     }
     public async Task<AcessoAlunoDto?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
@@ -50,6 +52,8 @@ public class AcessoAlunoService : IAcessoAlunoService
     public async Task<AcessoAlunoDto> AdicionarAsync(AcessoAlunoDto acessoDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(acessoDto);
+        if (acessoDto.Entrada is bool entrada)
+            return await RegistrarAsync(acessoDto.AlunoAcesso.Id, acessoDto.DataHora, entrada, cancellationToken);
         var aluno = await _alunoRepoFactory().ObterPorId(acessoDto.AlunoAcesso.Id, cancellationToken)
         ?? throw new InvalidOperationException($"Aluno com ID {acessoDto.AlunoAcesso.Id} não encontrado.");
         var acesso = acessoDto.ToEntity(aluno);
@@ -63,7 +67,13 @@ public class AcessoAlunoService : IAcessoAlunoService
         ?? throw new KeyNotFoundException($"Acesso com ID {acessoDto.Id} não encontrado.");
         var aluno = await _alunoRepoFactory().ObterPorId(acessoDto.AlunoAcesso.Id, cancellationToken)
         ?? throw new InvalidOperationException($"Aluno com ID {acessoDto.AlunoAcesso.Id} não encontrado.");
-        var acesso = acessoDto.ToEntity(aluno);
+        var acesso = new AcessoAlunoDto
+        {
+            Id = existente.Id,
+            AlunoAcesso = acessoDto.AlunoAcesso,
+            DataHora = acessoDto.DataHora,
+            Entrada = existente.Entrada
+        }.ToEntity(aluno);
         var atualizado = await _acessoRepoFactory().Atualizar(acesso, cancellationToken);
         return atualizado.ToDto(aluno.ToDto());
     }

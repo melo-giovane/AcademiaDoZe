@@ -91,3 +91,10 @@ CREATE TABLE IF NOT EXISTS tb_acesso (
   INDEX ix_tb_acesso_pessoa (pessoa_tipo, pessoa_id),
   INDEX ix_tb_acesso_data_hora (data_hora)
 ) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS tb_acesso_movimento (
+  id_acesso INT NOT NULL,
+  entrada TINYINT NOT NULL CHECK (entrada IN (0, 1)),
+  PRIMARY KEY (id_acesso),
+  CONSTRAINT fk_tb_acesso_movimento_tb_acesso FOREIGN KEY (id_acesso) REFERENCES tb_acesso (id_acesso) ON DELETE CASCADE
+) ENGINE = InnoDB;

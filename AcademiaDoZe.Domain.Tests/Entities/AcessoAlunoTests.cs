@@ -69,38 +69,15 @@ public class AcessoAlunoTests
 
         }
     }
-    [Theory(DisplayName = "AcessoAluno: horario fora do intervalo -> DATAHORA_INTERVALO")]
-    [InlineData(5, 59)]
-    [InlineData(22, 1)]
-    public void Deve_Falhar_Criacao_Quando_HorarioForaDoIntervalo
-
-    (int hour, int minute)
-
+    [Fact(DisplayName = "AcessoAluno: data e hora ausentes -> DATA_HORA_INVALIDA")]
+    public void Deve_Falhar_Criacao_Quando_DataHoraAusente()
     {
         var aluno = GetValidAluno();
-        var dataHora = DateTime.Today.AddHours
-        (hour).AddMinutes
-        (minute);
-
-        var result = AcessoAluno
-
-        .Criar(1, aluno, dataHora);
-
-        Assert
-        .True
-        (result.IsFailure);
-        Assert
-        .NotEmpty
-        (result.Notifications);
-
-        Assert
-        .Contains
-        (result.Notifications,
-        n =>
-        n.Mensagem == "DATA_HORA_INTERVALO_INVALIDO");
-
+        var result = AcessoAluno.Criar(1, aluno, default);
+        Assert.True(result.IsFailure);
+        Assert.Contains(result.Notifications, n => n.Mensagem == "DATA_HORA_INVALIDA");
     }
-    [Theory(DisplayName = "AcessoAluno: criação bem-sucedida em horários permitidos")]
+    [Theory(DisplayName = "AcessoAluno: preserva acesso sem movimento informado")]
     [InlineData(10)]
     [InlineData(11)]
     public void Deve_Criar_Com_Sucesso_Quando_HorarioValido
@@ -126,28 +103,22 @@ public class AcessoAlunoTests
         Assert
         .Equal
         (dataHora, result.Value.DataHora);
-
+        Assert.Null(result.Value.Entrada);
     }
-    [Theory(DisplayName = "AcessoAluno: permite horários de borda 06:00 e 22:00")]
-    [InlineData(6)]
-    [InlineData(22)]
-    public void Deve_Permitir_HorariosDeBorda_06_00_e_22_00
-    (int hour)
-
+    [Theory(DisplayName = "AcessoAluno: preserva entrada e saída a qualquer hora do dia")]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    [InlineData(6, true)]
+    [InlineData(22, false)]
+    [InlineData(23, true)]
+    public void Deve_Preservar_Movimento_Em_Qualquer_Horario(int hora, bool entrada)
     {
         var aluno = GetValidAluno();
-        var time = DateTime.Today.AddHours
-        (hour);
-
-        var
-        r = AcessoAluno
-        .Criar(1, aluno, time);
-
-        Assert
-        .True
-        (
-        r.IsSuccess);
-
+        var dataHora = DateTime.Today.AddHours(hora);
+        var result = AcessoAluno.Criar(1, aluno, dataHora, entrada);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(dataHora, result.Value!.DataHora);
+        Assert.Equal(entrada, result.Value.Entrada);
     }
 
 }

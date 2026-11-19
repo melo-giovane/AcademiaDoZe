@@ -30,19 +30,15 @@ public class AcessoColaboradorTests
             Assert.True(result.IsSuccess);
         }
     }
-    [Theory(DisplayName = "AcessoColaborador: horario fora do intervalo -> DATAHORA_INTERVALO")]
-    [InlineData(5, 59)]
-    [InlineData(22, 1)]
-    public void Deve_Falhar_Criacao_Quando_HorarioForaDoIntervalo(int hour, int minute)
+    [Fact(DisplayName = "AcessoColaborador: data e hora ausentes -> DATA_HORA_INVALIDA")]
+    public void Deve_Falhar_Criacao_Quando_DataHoraAusente()
     {
         var colaborador = GetValidColaborador();
-        var dataHora = DateTime.Today.AddHours(hour).AddMinutes(minute);
-        var result = AcessoColaborador.Criar(1, colaborador, dataHora);
+        var result = AcessoColaborador.Criar(1, colaborador, default);
         Assert.True(result.IsFailure);
-        Assert.NotEmpty(result.Notifications);
-        Assert.Contains(result.Notifications, n => n.Mensagem == "DATA_HORA_INTERVALO_INVALIDO");
+        Assert.Contains(result.Notifications, n => n.Mensagem == "DATA_HORA_INVALIDA");
     }
-    [Theory(DisplayName = "AcessoColaborador: criação bem-sucedida em horários permitidos")]
+    [Theory(DisplayName = "AcessoColaborador: preserva acesso sem movimento informado")]
     [InlineData(10)]
     [InlineData(14)]
     public void Deve_Criar_Com_Sucesso_Quando_HorarioValido(int hour)
@@ -53,16 +49,22 @@ public class AcessoColaboradorTests
         Assert.True(result.IsSuccess);
         Assert.Equal(colaborador.Id, result.Value!.ColaboradorId);
         Assert.Equal(dataHora, result.Value.DataHora);
+        Assert.Null(result.Value.Entrada);
     }
-    [Theory(DisplayName = "AcessoColaborador: permite horários de borda 06:00 e 22:00")]
-    [InlineData(6)]
-    [InlineData(22)]
-    public void Deve_Permitir_HorariosDeBorda_06_00_e_22_00(int hour)
+    [Theory(DisplayName = "AcessoColaborador: preserva entrada e saída a qualquer hora do dia")]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    [InlineData(6, true)]
+    [InlineData(22, false)]
+    [InlineData(23, true)]
+    public void Deve_Preservar_Movimento_Em_Qualquer_Horario(int hora, bool entrada)
     {
         var colaborador = GetValidColaborador();
-        var time = DateTime.Today.AddHours(hour);
-        var r = AcessoColaborador.Criar(1, colaborador, time);
-        Assert.True(r.IsSuccess);
+        var dataHora = DateTime.Today.AddHours(hora);
+        var result = AcessoColaborador.Criar(1, colaborador, dataHora, entrada);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(dataHora, result.Value!.DataHora);
+        Assert.Equal(entrada, result.Value.Entrada);
     }
 
 }

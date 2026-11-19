@@ -58,10 +58,21 @@ public partial class AcessoViewModel : BaseViewModel
         get => _mensagem;
         private set => SetProperty(ref _mensagem, value);
     }
-    private bool EstaNaAcademia => PessoaSelecionada != null && Registros.FirstOrDefault(registro =>
-        registro.Pessoa.Id == PessoaSelecionada.Id && registro.Pessoa.GetType() == PessoaSelecionada.GetType())?.Entrada == true;
-    public string Situacao => PessoaSelecionada == null ? string.Empty : EstaNaAcademia ? "Dentro da academia" : "Fora da academia";
-    public string Acao => EstaNaAcademia ? "Registrar saída" : "Registrar entrada";
+    public string Situacao
+    {
+        get
+        {
+            var pessoa = PessoaSelecionada;
+            if (pessoa == null || _dataHistorico != DateOnly.FromDateTime(DateTime.Today)) return string.Empty;
+            var registro = Registros.FirstOrDefault(item => item.Pessoa.Id == pessoa.Id && item.Pessoa.GetType() == pessoa.GetType());
+            return registro?.Entrada switch
+            {
+                true => "Dentro da academia",
+                false => "Fora da academia",
+                null => string.Empty
+            };
+        }
+    }
 
     public AcessoViewModel(IAlunoService alunoService, IColaboradorService colaboradorService,
         IAcessoAlunoService acessoAlunoService, IAcessoColaboradorService acessoColaboradorService)
@@ -80,7 +91,6 @@ public partial class AcessoViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            _dataHistorico = default;
             AtualizarAcao();
             Mensagem = string.Empty;
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -103,21 +113,19 @@ public partial class AcessoViewModel : BaseViewModel
         }
     }
 
-    private bool PodeRegistrar() => !IsBusy && PessoaSelecionada != null && _dataHistorico != default;
+    private bool PodeRegistrar() => !IsBusy && PessoaSelecionada != null;
 
     [RelayCommand(CanExecute = nameof(PodeRegistrar))]
-    private async Task RegistrarAsync()
+    private Task RegistrarEntradaAsync() => RegistrarAsync(true);
+
+    [RelayCommand(CanExecute = nameof(PodeRegistrar))]
+    private Task RegistrarSaidaAsync() => RegistrarAsync(false);
+
+    private async Task RegistrarAsync(bool entrada)
     {
         var pessoa = PessoaSelecionada;
         if (pessoa == null || !PodeRegistrar()) return;
         var dataHora = DateTime.Now;
-        if (DateOnly.FromDateTime(dataHora) != _dataHistorico)
-        {
-            await CarregarAsync();
-            return;
-        }
-
-        bool entrada = !EstaNaAcademia;
         try
         {
             IsBusy = true;
@@ -134,6 +142,12 @@ public partial class AcessoViewModel : BaseViewModel
             {
                 var acesso = await _acessoColaboradorService.RegistrarAsync(pessoa.Id, dataHora, entrada, cts.Token);
                 registro = new AcessoRegistro(acesso.Id, acesso.ColaboradorAcesso, acesso.DataHora, entrada);
+            }
+            var dia = DateOnly.FromDateTime(registro.DataHora);
+            if (dia != _dataHistorico)
+            {
+                Registros.Clear();
+                _dataHistorico = dia;
             }
             Registros.Insert(0, registro);
             Mensagem = $"{registro.Movimento} registrada às {registro.DataHora:HH:mm:ss}.";
@@ -170,12 +184,11 @@ public partial class AcessoViewModel : BaseViewModel
         var alunosTask = _acessoAlunoService.ObterAcessosPorAlunoPeriodoAsync(inicio: data, fim: data, cancellationToken: cancellationToken);
         var colaboradoresTask = _acessoColaboradorService.ObterAcessosPorColaboradorPeriodoAsync(inicio: data, fim: data, cancellationToken: cancellationToken);
         await Task.WhenAll(alunosTask, colaboradoresTask);
-        var alunos = (await alunosTask).Select(acesso => new AcessoRegistro(acesso.Id, acesso.AlunoAcesso, acesso.DataHora));
-        var colaboradores = (await colaboradoresTask).Select(acesso => new AcessoRegistro(acesso.Id, acesso.ColaboradorAcesso, acesso.DataHora));
+        var alunos = (await alunosTask).Select(acesso => new AcessoRegistro(acesso.Id, acesso.AlunoAcesso, acesso.DataHora, acesso.Entrada));
+        var colaboradores = (await colaboradoresTask).Select(acesso => new AcessoRegistro(acesso.Id, acesso.ColaboradorAcesso, acesso.DataHora, acesso.Entrada));
         var registros = alunos.Concat(colaboradores)
             .GroupBy(registro => (registro.Pessoa.GetType(), registro.Pessoa.Id))
-            .SelectMany(grupo => grupo.OrderBy(registro => registro.DataHora).ThenBy(registro => registro.Id)
-                .Select((registro, indice) => registro with { Entrada = indice % 2 == 0 }))
+            .SelectMany(ClassificarRegistros)
             .OrderByDescending(registro => registro.DataHora).ThenByDescending(registro => registro.Id);
         Registros.Clear();
         foreach (var registro in registros)
@@ -183,16 +196,27 @@ public partial class AcessoViewModel : BaseViewModel
         _dataHistorico = data;
     }
 
+    private static IEnumerable<AcessoRegistro> ClassificarRegistros(IEnumerable<AcessoRegistro> registros)
+    {
+        bool proximaEntrada = true;
+        foreach (var registro in registros.OrderBy(registro => registro.DataHora).ThenBy(registro => registro.Id))
+        {
+            bool entrada = registro.Entrada ?? proximaEntrada;
+            yield return registro with { Entrada = entrada };
+            proximaEntrada = !entrada;
+        }
+    }
+
     private void AtualizarAcao()
     {
         OnPropertyChanged(nameof(Situacao));
-        OnPropertyChanged(nameof(Acao));
-        RegistrarCommand.NotifyCanExecuteChanged();
+        RegistrarEntradaCommand.NotifyCanExecuteChanged();
+        RegistrarSaidaCommand.NotifyCanExecuteChanged();
     }
 }
 
-public record AcessoRegistro(int Id, PessoaDto Pessoa, DateTime DataHora, bool Entrada = false)
+public record AcessoRegistro(int Id, PessoaDto Pessoa, DateTime DataHora, bool? Entrada)
 {
     public string TipoPessoa => Pessoa is AlunoDto ? "Aluno" : "Colaborador";
-    public string Movimento => Entrada ? "Entrada" : "Saída";
+    public string Movimento => Entrada == true ? "Entrada" : "Saída";
 }

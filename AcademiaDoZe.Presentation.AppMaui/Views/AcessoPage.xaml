@@ -13,7 +13,7 @@
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
-    <Grid Padding="15" RowDefinitions="Auto,*" RowSpacing="12">
+    <Grid Padding="15" RowDefinitions="Auto,Auto,*" RowSpacing="12">
         <Border Style="{StaticResource CardBorder}">
             <VerticalStackLayout Spacing="8">
                 <Label Text="Registrar entrada ou saída" Style="{StaticResource SubHeadline}" />
@@ -33,15 +33,16 @@
                 </VerticalStackLayout>
                 <Label Text="{Binding PessoaSelecionada.Cpf, StringFormat='CPF {0}'}" />
                 <Label Text="{Binding Situacao}" FontAttributes="Bold" />
-                <Button Text="{Binding Acao}" Command="{Binding RegistrarCommand}" Style="{StaticResource ButtonPrimary}" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Text="Registrar entrada" Command="{Binding RegistrarEntradaCommand}" Style="{StaticResource ButtonPrimary}" />
+                    <Button Grid.Column="1" Text="Registrar saída" Command="{Binding RegistrarSaidaCommand}" Style="{StaticResource ButtonSecondary}" />
+                </Grid>
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                 <Label Text="{Binding Mensagem}" />
             </VerticalStackLayout>
         </Border>
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Registros}" SelectionMode="None">
-            <CollectionView.Header>
-                <Label Text="Acessos registrados hoje" Style="{StaticResource SubHeadline}" Margin="0,0,0,10" />
-            </CollectionView.Header>
+        <Label Grid.Row="1" Text="Acessos registrados hoje" Style="{StaticResource SubHeadline}" />
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Registros}" SelectionMode="None">
             <CollectionView.EmptyView>
                 <Label Text="Nenhum acesso registrado hoje." HorizontalTextAlignment="Center" />
             </CollectionView.EmptyView>

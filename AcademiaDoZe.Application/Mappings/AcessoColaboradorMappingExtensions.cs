@@ -12,14 +12,15 @@ public static class AcessoColaboradorMappingExtensions
         {
             Id = acesso.Id,
             ColaboradorAcesso = colaboradorDto,
-            DataHora = acesso.DataHora
+            DataHora = acesso.DataHora,
+            Entrada = acesso.Entrada
         };
     }
     public static AcessoColaborador ToEntity(this AcessoColaboradorDto acessoDto, Colaborador colaborador)
     {
         ArgumentNullException.ThrowIfNull(acessoDto);
         ArgumentNullException.ThrowIfNull(colaborador);
-        var result = AcessoColaborador.Criar(acessoDto.Id, colaborador, acessoDto.DataHora);
+        var result = AcessoColaborador.Criar(acessoDto.Id, colaborador, acessoDto.DataHora, acessoDto.Entrada);
         if (result.IsFailure)
         {
             throw new InvalidOperationException($"Erro de validação ao converter AcessoColaborador: {string.Join(", ", result.Notifications.Select(n => n.Mensagem))}");

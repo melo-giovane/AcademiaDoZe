@@ -18,11 +18,13 @@ public class AcessoColaboradorService : IAcessoColaboradorService
     {
         var colaborador = await _colaboradorRepoFactory().ObterPorId(colaboradorId, cancellationToken)
         ?? throw new InvalidOperationException($"Colaborador com ID {colaboradorId} não encontrado.");
-        var result = AcessoColaborador.Criar(0, colaborador, dataHora);
+        var result = AcessoColaborador.Criar(0, colaborador, dataHora, entrada);
         if (result.IsFailure)
-            throw new InvalidOperationException("Os acessos podem ser registrados das 06:00 às 22:00.");
+            throw new InvalidOperationException("Informe uma data e hora válidas para registrar o acesso.");
         var registrado = await _acessoRepoFactory().Registrar(result.Value!, entrada, cancellationToken)
-        ?? throw new InvalidOperationException("A entrada ou saída solicitada não está disponível. Atualize o histórico de acessos.");
+        ?? throw new InvalidOperationException(entrada
+            ? "Não foi possível registrar a entrada. Verifique se já há uma entrada em aberto no histórico."
+            : "Não foi possível registrar a saída. Verifique se há uma entrada em aberto no histórico.");
         return registrado.ToDto(colaborador.ToDto());
     }
     public async Task<AcessoColaboradorDto?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
@@ -41,6 +43,8 @@ public class AcessoColaboradorService : IAcessoColaboradorService
     public async Task<AcessoColaboradorDto> AdicionarAsync(AcessoColaboradorDto acessoDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(acessoDto);
+        if (acessoDto.Entrada is bool entrada)
+            return await RegistrarAsync(acessoDto.ColaboradorAcesso.Id, acessoDto.DataHora, entrada, cancellationToken);
         var colaborador = await _colaboradorRepoFactory().ObterPorId(acessoDto.ColaboradorAcesso.Id, cancellationToken)
         ?? throw new InvalidOperationException($"Colaborador com ID {acessoDto.ColaboradorAcesso.Id} não encontrado.");
         var acesso = acessoDto.ToEntity(colaborador);
@@ -54,7 +58,13 @@ public class AcessoColaboradorService : IAcessoColaboradorService
         ?? throw new KeyNotFoundException($"Acesso com ID {acessoDto.Id} não encontrado.");
         var colaborador = await _colaboradorRepoFactory().ObterPorId(acessoDto.ColaboradorAcesso.Id, cancellationToken)
         ?? throw new InvalidOperationException($"Colaborador com ID {acessoDto.ColaboradorAcesso.Id} não encontrado.");
-        var acesso = acessoDto.ToEntity(colaborador);
+        var acesso = new AcessoColaboradorDto
+        {
+            Id = existente.Id,
+            ColaboradorAcesso = acessoDto.ColaboradorAcesso,
+            DataHora = acessoDto.DataHora,
+            Entrada = existente.Entrada
+        }.ToEntity(colaborador);
         var atualizado = await _acessoRepoFactory().Atualizar(acesso, cancellationToken);
         return atualizado.ToDto(colaborador.ToDto());
     }
